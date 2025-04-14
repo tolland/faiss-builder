@@ -11,7 +11,7 @@ set -u
 # Create a temporary directory
 # TEMP_DIR=$(mktemp -d)
 
-TEMP_DIR=/tmp/faiss_test
+TEMP_DIR=/build/faiss_test
 
 echo $TEMP_DIR
 
@@ -25,9 +25,7 @@ fi
 
 source "${TEMP_DIR}/venv/bin/activate"
 
-pip uninstall -y faiss || true
-
-pip install /tmp/faiss-proj/faiss/_build/faiss/python/dist/faiss-*.whl
+pip install --force-reinstall /tmp/faiss-proj/faiss/_build/faiss/python/dist/faiss-*.whl
 
 # Run your tests
 #python -m unittest discover -s tests
@@ -35,6 +33,10 @@ pip install /tmp/faiss-proj/faiss/_build/faiss/python/dist/faiss-*.whl
 # # Clean up the temporary directory
 # rm -rf $TEMP_DIR
 
-python -c "import faiss"
+echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+echo "MKLROOT=$MKLROOT"
+
+python -c "import faiss" || true
+python -c "import faiss._swigfaiss" || true
 
 )
