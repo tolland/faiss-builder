@@ -20,9 +20,14 @@ def generate_performance_plot():
     x = np.arange(len(index_types))
     width = 0.2
     
+    # Also save individual benchmark JSON files for each index type
     for i, build_type in enumerate(build_types):
         try:
-            with open(results_dir / f'benchmark_{build_type}_results.json', 'r') as f:
+            bench_file = results_dir / f'benchmark_{build_type}_results.json'
+            if not bench_file.exists():
+                continue
+                
+            with open(bench_file, 'r') as f:
                 data = json.load(f)
                 # Look for benchmark data in the 'benchmarks' list
                 if 'benchmarks' in data:
@@ -36,7 +41,27 @@ def generate_performance_plot():
                     for idx in index_types:
                         test_name = f'test_search_performance[{idx}]'
                         if test_name in benchmark_dict:
-                            times.append(benchmark_dict[test_name]['stats']['mean'])
+                            # Use mean time from benchmark data
+                            mean_time = benchmark_dict[test_name]['stats']['mean']
+                            times.append(mean_time)
+                            
+                            # Also save individual benchmark file for this index type
+                            idx_data = {
+                                "index_type": idx,
+                                "dim": 128,  # These are constants in the benchmark_faiss.py
+                                "num_vectors": 10000,
+                                "num_queries": 1000,
+                                "k": 10,
+                                "mean_time": mean_time,
+                                "std_time": benchmark_dict[test_name]['stats']['stddev'],
+                                "min_time": benchmark_dict[test_name]['stats']['min'],
+                                "max_time": benchmark_dict[test_name]['stats']['max'],
+                                "timestamp": data.get('datetime', '')
+                            }
+                            
+                            # Write individual benchmark file
+                            with open(results_dir / f"benchmark_{idx}.json", 'w') as f:
+                                json.dump(idx_data, f, indent=2)
                         else:
                             times.append(0)  # Use 0 for missing data
                     

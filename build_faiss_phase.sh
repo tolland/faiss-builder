@@ -18,8 +18,8 @@ echo "Building FAISS..."
 ./20_create_faiss_venv.sh $BUILD_TYPE
 ./21_faiss_configure.sh $BUILD_TYPE
 ./22_faiss_build.sh $BUILD_TYPE
-./23_faiss_python_package.sh $BUILD_TYPE
-./24_faiss_install_package.sh $BUILD_TYPE
+./23_faiss_build_python_package.sh $BUILD_TYPE
+./24_faiss_install_python_package.sh $BUILD_TYPE
 ./25_faiss_test_package.sh $BUILD_TYPE
 
 echo "FAISS build phase completed successfully!"

@@ -51,53 +51,10 @@ def test_search_performance(benchmark, index_type):
     
     benchmark(search)
     
-    # Store benchmark results
+    # Create benchmark_results dir but don't write individual files
+    # Individual files are now handled by generate_plot.py
     results_dir = Path("benchmark_results")
     results_dir.mkdir(exist_ok=True)
-    
-    # Access benchmark properties safely
-    try:
-        mean_time = getattr(benchmark, "mean", None)
-        if mean_time is None and hasattr(benchmark, "stats"):
-            mean_time = benchmark.stats.mean
-        
-        std_time = getattr(benchmark, "stddev", None)
-        if std_time is None and hasattr(benchmark, "stats"):
-            std_time = benchmark.stats.stddev
-            
-        min_time = getattr(benchmark, "min", None)
-        if min_time is None and hasattr(benchmark, "stats"):
-            min_time = benchmark.stats.min
-            
-        max_time = getattr(benchmark, "max", None)
-        if max_time is None and hasattr(benchmark, "stats"):
-            max_time = benchmark.stats.max
-    except Exception as e:
-        print(f"Debug - Error accessing benchmark stats: {e}")
-        print(f"Debug - Benchmark attributes: {dir(benchmark)}")
-        if hasattr(benchmark, "stats"):
-            print(f"Debug - Stats attributes: {dir(benchmark.stats)}")
-        mean_time = 0
-        std_time = 0
-        min_time = 0
-        max_time = 0
-    
-    result_data = {
-        "index_type": index_type,
-        "dim": dim,
-        "num_vectors": num_vectors,
-        "num_queries": num_queries,
-        "k": k,
-        "mean_time": mean_time,
-        "std_time": std_time,
-        "min_time": min_time,
-        "max_time": max_time,
-        "timestamp": time.time()
-    }
-    
-    result_file = results_dir / f"benchmark_{index_type}.json"
-    with open(result_file, 'w') as f:
-        json.dump(result_data, f, indent=2)
 
 def generate_performance_plot():
     """Generate a performance comparison plot from benchmark results."""
