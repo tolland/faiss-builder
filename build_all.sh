@@ -17,8 +17,9 @@ run_script() {
 
 # List of scripts to execute in order
 SCRIPTS=(
-    "00_checkout.sh"
-    "01_venv.sh"
+    "00_versions.sh"
+    "01_checkout.sh"
+    "02_venv.sh"
     "10_build_numpy.sh"
     "11_install_mkl_numpy.sh"
     "21_configure.sh"
