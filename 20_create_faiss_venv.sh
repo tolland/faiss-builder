@@ -18,4 +18,3 @@ echo "Installing build dependencies..."
 # Install numpy (with MKL) from numpy dist for faiss build
 "${FAISS_VENV_DIR}/bin/pip" install --force-reinstall \
     "$SCRIPT_DIR/numpy/dist/numpy-2.2.4-cp313-cp313-linux_x86_64.whl"
-

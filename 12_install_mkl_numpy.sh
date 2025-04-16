@@ -4,7 +4,8 @@ set -eu
 set -o pipefail
 
 # Source common functions
-source "$(dirname "$0")/common.sh"
+[ -z "${COMMON_SOURCED:-""}" ] && source common.sh
+[ -z "${MKL_SOURCED:-""}" ] && source mkl.sh
 ensure_script_dir
 source_versions
 verify_repositories
