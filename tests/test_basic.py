@@ -1,24 +1,3 @@
-#!/bin/bash
-
-set -eu
-set -o pipefail
-
-# Source common functions
-source "$(dirname "$0")/common.sh"
-ensure_script_dir
-source_versions
-verify_repositories
-
-# Activate faiss test venv
-activate_venv "$FAISS_VENV_DIR"
-
-# Run tests
-
-run_command "python -c 'import faiss; print(faiss.__version__)'" "Testing faiss import"
-
-
-echo "Running tests..."
-python3 -c "
 import faiss
 import numpy as np
 
@@ -40,7 +19,4 @@ D, I = index.search(xq, k)
 print('First 5 results of first query:')
 print(I[0][:5])
 print('Distances:')
-print(D[0][:5])
-"
-
-
+print(D[0][:5]) 

@@ -26,7 +26,7 @@ case "$BUILD_TYPE" in
         echo "NUMPY_VENV_DIR: $NUMPY_VENV_DIR"
 
         "${NUMPY_VENV_DIR}/bin/pip" install --force-reinstall \
-            "$SCRIPT_DIR/numpy/dist_numpy/numpy-*.whl"
+            "$SCRIPT_DIR/numpy/dist_numpy/"numpy-*.whl
         ;;
     "numpy_mkl")
         # Source MKL and install MKL numpy
@@ -36,7 +36,7 @@ case "$BUILD_TYPE" in
         echo "NUMPY_MKL_VENV_DIR: $NUMPY_MKL_VENV_DIR"
 
         "${NUMPY_MKL_VENV_DIR}/bin/pip" install --force-reinstall \
-            "$SCRIPT_DIR/numpy/dist_numpy_mkl/numpy-*.whl"
+            "$SCRIPT_DIR/numpy/dist_numpy_mkl/"numpy-*.whl
         ;;
     *)
         echo "Error: Invalid build type '$BUILD_TYPE'"

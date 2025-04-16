@@ -1,0 +1,2 @@
+pytest-benchmark>=3.4.1
+matplotlib>=3.7.1 

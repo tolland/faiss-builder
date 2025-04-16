@@ -1,16 +1,20 @@
 #!/bin/bash
 set -eu
 
-# Source common functions
-source common.sh
+# Check if argument is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <venv_type>"
+    echo "Venv types: numpy, numpy_mkl"
+    exit 1
+fi
 
+VENV_TYPE=$1
 
 
 # Build numpy with MKL
 echo "Building numpy with MKL..."
-./10_create_numpy_venv.sh
-./11_build_numpy.sh
-./12_install_mkl_numpy.sh
+./10_numpy_create_venv.sh $VENV_TYPE
+./11_numpy_build_package.sh $VENV_TYPE
+./12_numpy_install_package.sh $VENV_TYPE
 
 echo "Numpy build phase completed successfully!"
-echo "Virtual environment is in: $(pwd)/numpy_venv" 

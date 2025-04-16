@@ -22,8 +22,6 @@ verify_repositories
 # Activate numpy venv for packaging
 activate_venv "$NUMPY_VENV_DIR"
 
-cd "$SCRIPT_DIR/faiss"
-
 # Package faiss
 cd "$SCRIPT_DIR/faiss/${BUILD_DIR}/faiss/python"
 run_command "python setup.py sdist bdist_wheel" "Creating faiss package"

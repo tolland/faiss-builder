@@ -26,7 +26,6 @@ case "$BUILD_TYPE" in
         # Build numpy without MKL
         cd "$SCRIPT_DIR/numpy"
         run_command "python -m build -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir dist_numpy" "Building numpy without MKL support"
-        run_command "pip install dist_numpy/*.whl" "Installing numpy"
         ;;
     "numpy_mkl")
         # Source MKL and activate MKL numpy venv
@@ -36,7 +35,6 @@ case "$BUILD_TYPE" in
         # Build numpy with MKL
         cd "$SCRIPT_DIR/numpy"
         run_command "python -m build -Csetup-args=-Dblas=mkl -Csetup-args=-Dlapack=mkl  --outdir dist_numpy_mkl" "Building numpy with MKL support"
-        run_command "pip install dist_numpy_mkl/*.whl" "Installing numpy"
         ;;
     *)
         echo "Error: Invalid build type '$BUILD_TYPE'"

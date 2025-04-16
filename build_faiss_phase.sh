@@ -1,26 +1,25 @@
 #!/bin/bash
-set -e
+set -eu
 
-# Source common functions
-source common.sh
+# Check if argument is provided
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 <build_type>"
+    echo "Build types: cpu, cpu_mkl, gpu, gpu_mkl"
+    exit 1
+fi
 
-# Create and activate FAISS-specific venv
-echo "Creating FAISS build virtual environment..."
-python3 -m venv venv
-source venv/bin/activate
+BUILD_TYPE=$1
+BUILD_DIR="_build_${BUILD_TYPE}"
 
-# Install build dependencies
-echo "Installing build dependencies..."
-pip install --upgrade pip
-pip install wheel setuptools
+
 
 # Build FAISS
 echo "Building FAISS..."
-./21_configure.sh
-./22_build.sh
-./23_package.sh
-./24_install_package.sh
-./25_test_package.sh
+./20_create_faiss_venv.sh $BUILD_TYPE
+./21_faiss_configure.sh $BUILD_TYPE
+./22_faiss_build.sh $BUILD_TYPE
+./23_faiss_python_package.sh $BUILD_TYPE
+./24_faiss_install_package.sh $BUILD_TYPE
+./25_faiss_test_package.sh $BUILD_TYPE
 
 echo "FAISS build phase completed successfully!"
-echo "Virtual environment is in: $(pwd)/venv"
