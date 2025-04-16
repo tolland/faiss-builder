@@ -4,23 +4,23 @@ set -eu
 set -o pipefail
 
 # Source common functions
-source "$(dirname "$0")/common.sh"
+[ -z "${COMMON_SOURCED:-""}" ] && source common.sh
 ensure_script_dir
 
 # Function to get latest stable version from GitHub API
 get_latest_stable_version() {
     local repo=$1
     local api_url="https://api.github.com/repos/${repo}/releases/latest"
-    
+
     # Try to get the latest release
     local version=$(curl -s "$api_url" | grep -oP '"tag_name": "\K[^"]*')
-    
+
     # If no releases found, try to get the latest tag
     if [ -z "$version" ]; then
         local tags_url="https://api.github.com/repos/${repo}/tags"
         version=$(curl -s "$tags_url" | grep -oP '"name": "\K[^"]*' | grep -v "rc" | grep -v "beta" | grep -v "alpha" | head -n 1)
     fi
-    
+
     echo "$version"
 }
 

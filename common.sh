@@ -3,15 +3,15 @@
 # Get the directory where this script is located
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 NUMPY_VENV_DIR="$SCRIPT_DIR/numpy_venv"
-FAISS_VENV_DIR=$SCRIPT_DIR/faiss_venv
+NUMPY_MKL_VENV_DIR="$SCRIPT_DIR/numpy_mkl_venv"
+FAISS_CPU_VENV_DIR="$SCRIPT_DIR/faiss_cpu_venv"
+FAISS_CPU_MKL_VENV_DIR="$SCRIPT_DIR/faiss_cpu_mkl_venv"
+FAISS_GPU_VENV_DIR="$SCRIPT_DIR/faiss_gpu_venv"
+FAISS_GPU_MKL_VENV_DIR="$SCRIPT_DIR/faiss_gpu_mkl_venv"
 COMMON_SOURCED="true"
 NUM_PROCS="$(( $(nproc) / 2 ))"
 
-# Activate MKL environment with shared libraries
-set +u
-source /opt/intel/oneapi/mkl/2025.1/env/vars.sh
-source /opt/intel/oneapi/compiler/2025.1/env/vars.sh
-set -u
+
 
 echo "SCRIPT DIR: $SCRIPT_DIR"
 
