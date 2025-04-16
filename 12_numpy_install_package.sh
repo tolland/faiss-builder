@@ -44,8 +44,3 @@ case "$BUILD_TYPE" in
         exit 1
         ;;
 esac
-
-# FAISS_VENV_DIR=/build/faiss_venv
-
-# "${FAISS_VENV_DIR}/bin/pip" install --force-reinstall \
-#     /build/numpy/dist/numpy-2.2.4-cp313-cp313-linux_x86_64.whl

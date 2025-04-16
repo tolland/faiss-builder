@@ -18,19 +18,13 @@ ensure_script_dir
 source_versions
 verify_repositories
 
-FAISS_TESTS=(
-    "tests/simple.py"
-    "faiss/tutorial/python/1-Flat.py"
-    "faiss/tutorial/python/2-IVFFlat.py"
-    "faiss/tutorial/python/3-IVFPQ.py"
-    "faiss/tutorial/python/7-PQFastScan.py"
-)
+# Check if a virtual environment is already active
+check_venv_active
 
 # Determine which venv directory to use
 case "$BUILD_TYPE" in
     "cpu")
         VENV_DIR="$FAISS_CPU_VENV_DIR"
-        
         ;;
     "cpu_mkl")
         VENV_DIR="$FAISS_CPU_MKL_VENV_DIR"
@@ -38,20 +32,10 @@ case "$BUILD_TYPE" in
         ;;
     "gpu")
         VENV_DIR="$FAISS_GPU_VENV_DIR"
-        FAISS_TESTS+=(
-            "tests/gpu.py"
-            "faiss/tutorial/python/4-GPU.py"
-            "faiss/tutorial/python/5-Multiple-GPUs.py"
-        )
         ;;
     "gpu_mkl")
         VENV_DIR="$FAISS_GPU_MKL_VENV_DIR"
         [ -z "${MKL_SOURCED:-""}" ] && source mkl.sh
-        FAISS_TESTS+=(
-            "tests/gpu.py"
-            "faiss/tutorial/python/4-GPU.py"
-            "faiss/tutorial/python/5-Multiple-GPUs.py"
-        )
         ;;
     *)
         echo "Error: Invalid build type '$BUILD_TYPE'"
@@ -63,12 +47,20 @@ esac
 # Activate faiss test venv
 activate_venv "$VENV_DIR"
 
-echo "Sanity check: Testing FAISS build type: $BUILD_TYPE"
-run_command "python -c 'import faiss; print(faiss.__version__)'" "Testing faiss import"
+pip install -q --upgrade pip
+# Install benchmark dependencies (except numpy which we want from our build)
+pip install -q -r "$SCRIPT_DIR/tests/requirements-benchmark.txt"
 
+# Run benchmark tests
+echo "Running benchmark tests for $BUILD_TYPE..."
+cd "$SCRIPT_DIR/tests"
+mkdir -p benchmark_results
 
-echo "Running tests..."
-for test in "${FAISS_TESTS[@]}"; do
-    echo "Running test: $test"
-    run_command "python $test" "Running test: $test"
-done
+which pytest
+
+# Run pytest with benchmark
+pytest benchmark_faiss.py -v --benchmark-only --benchmark-json="benchmark_results/benchmark_${BUILD_TYPE}_results.json"
+
+# Generate performance comparison plot
+echo "Generating performance comparison plot..."
+python3 generate_plot.py

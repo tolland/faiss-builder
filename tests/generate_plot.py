@@ -24,9 +24,25 @@ def generate_performance_plot():
         try:
             with open(results_dir / f'benchmark_{build_type}_results.json', 'r') as f:
                 data = json.load(f)
-                times = [data[f'test_search_performance[{idx}]']['stats']['mean'] for idx in index_types]
-                ax.bar(x + i*width, times, width, label=build_type)
-        except FileNotFoundError:
+                # Look for benchmark data in the 'benchmarks' list
+                if 'benchmarks' in data:
+                    # Create a dictionary mapping test names to their data
+                    benchmark_dict = {}
+                    for benchmark in data['benchmarks']:
+                        benchmark_dict[benchmark['name']] = benchmark
+                    
+                    # Extract times for each index type
+                    times = []
+                    for idx in index_types:
+                        test_name = f'test_search_performance[{idx}]'
+                        if test_name in benchmark_dict:
+                            times.append(benchmark_dict[test_name]['stats']['mean'])
+                        else:
+                            times.append(0)  # Use 0 for missing data
+                    
+                    ax.bar(x + i*width, times, width, label=build_type)
+        except (FileNotFoundError, KeyError) as e:
+            print(f"Error processing {build_type} results: {e}")
             continue
     
     ax.set_xlabel('Index Type')

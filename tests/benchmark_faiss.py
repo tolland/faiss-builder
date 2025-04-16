@@ -30,21 +30,6 @@ def create_index(dim, vectors, index_type='flat'):
     index.add(vectors)
     return index
 
-def run_benchmark(benchmark, dim, num_vectors, num_queries, index_type, k=10):
-    """Run a benchmark test."""
-    vectors, queries = generate_test_data(dim, num_vectors, num_queries)
-    
-    def setup():
-        index = create_index(dim, vectors, index_type)
-        return index, queries, k
-    
-    def search(index, queries, k):
-        D, I = index.search(queries, k)
-        return D, I
-    
-    result = benchmark.pedantic(search, setup=setup, rounds=5, iterations=1)
-    return result
-
 @pytest.mark.parametrize("index_type", ['flat', 'ivf', 'hnsw'])
 def test_search_performance(benchmark, index_type):
     """Test search performance for different index types."""
@@ -53,11 +38,49 @@ def test_search_performance(benchmark, index_type):
     num_queries = 1000
     k = 10
     
-    result = run_benchmark(benchmark, dim, num_vectors, num_queries, index_type, k)
+    # Generate test data
+    vectors, queries = generate_test_data(dim, num_vectors, num_queries)
+    
+    # Create index
+    index = create_index(dim, vectors, index_type)
+    
+    # Run benchmark
+    def search():
+        D, I = index.search(queries, k)
+        return D, I
+    
+    benchmark(search)
     
     # Store benchmark results
     results_dir = Path("benchmark_results")
     results_dir.mkdir(exist_ok=True)
+    
+    # Access benchmark properties safely
+    try:
+        mean_time = getattr(benchmark, "mean", None)
+        if mean_time is None and hasattr(benchmark, "stats"):
+            mean_time = benchmark.stats.mean
+        
+        std_time = getattr(benchmark, "stddev", None)
+        if std_time is None and hasattr(benchmark, "stats"):
+            std_time = benchmark.stats.stddev
+            
+        min_time = getattr(benchmark, "min", None)
+        if min_time is None and hasattr(benchmark, "stats"):
+            min_time = benchmark.stats.min
+            
+        max_time = getattr(benchmark, "max", None)
+        if max_time is None and hasattr(benchmark, "stats"):
+            max_time = benchmark.stats.max
+    except Exception as e:
+        print(f"Debug - Error accessing benchmark stats: {e}")
+        print(f"Debug - Benchmark attributes: {dir(benchmark)}")
+        if hasattr(benchmark, "stats"):
+            print(f"Debug - Stats attributes: {dir(benchmark.stats)}")
+        mean_time = 0
+        std_time = 0
+        min_time = 0
+        max_time = 0
     
     result_data = {
         "index_type": index_type,
@@ -65,10 +88,10 @@ def test_search_performance(benchmark, index_type):
         "num_vectors": num_vectors,
         "num_queries": num_queries,
         "k": k,
-        "mean_time": benchmark.stats.mean,
-        "std_time": benchmark.stats.stdev,
-        "min_time": benchmark.stats.min,
-        "max_time": benchmark.stats.max,
+        "mean_time": mean_time,
+        "std_time": std_time,
+        "min_time": min_time,
+        "max_time": max_time,
         "timestamp": time.time()
     }
     

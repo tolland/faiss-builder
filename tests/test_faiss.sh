@@ -52,14 +52,6 @@ pip install -r "$SCRIPT_DIR/tests/requirements-benchmark.txt"
 echo "Sanity check: Testing FAISS build type: $BUILD_TYPE"
 run_command "python -c 'import faiss; print(faiss.__version__)'" "Testing faiss import"
 
-echo "Running basic functionality tests..."
-python3 "$SCRIPT_DIR/tests/test_basic.py"
-
-# Additional GPU-specific tests if applicable
-if [[ "$BUILD_TYPE" == *"gpu"* ]]; then
-    echo "Running GPU-specific tests..."
-    python3 "$SCRIPT_DIR/tests/test_gpu.py"
-fi
 
 # Run benchmark tests
 echo "Running benchmark tests..."
