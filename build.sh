@@ -72,6 +72,7 @@ BUILD_NUMPY=true
 BUILD_FAISS=true
 RUN_NUMPY_BUILD=true
 RUN_NUMPY_INSTALL=true
+RUN_FAISS_CREATE_VENV=true
 RUN_FAISS_CONFIGURE=true
 RUN_FAISS_BUILD=true
 RUN_FAISS_PYTHON_BUILD=true
@@ -151,6 +152,7 @@ while [[ $# -gt 0 ]]; do
             CHECKOUT_REPOS=false
             ;;
         --only-faiss-test)
+            # RUN_FAISS_CREATE_VENV=false
             RUN_FAISS_CONFIGURE=false
             RUN_FAISS_BUILD=false
             RUN_FAISS_PYTHON_BUILD=false
@@ -173,7 +175,7 @@ done
 run_script() {
     local script="$1"
     shift
-    local script_args="$@"
+    local script_args="$*"
 
     echo "========================================="
     echo "Executing $(basename "$script") $script_args..."
@@ -203,12 +205,12 @@ if [ "$BUILD_NUMPY" = true ]; then
     echo "Building NumPy ($NUMPY_BUILD_TYPE)..."
     
     if [ "$RUN_NUMPY_BUILD" = true ]; then
-        run_script "$LIB_DIR/10_numpy_create_venv.sh" "$NUMPY_BUILD_TYPE"
-        run_script "$LIB_DIR/11_numpy_build_package.sh" "$NUMPY_BUILD_TYPE"
+        run_script "$LIB_DIR/10_numpy_create_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/11_numpy_build_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     if [ "$RUN_NUMPY_INSTALL" = true ]; then
-        run_script "$LIB_DIR/12_numpy_install_package.sh" "$NUMPY_BUILD_TYPE"
+        run_script "$LIB_DIR/12_numpy_install_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     echo "NumPy build completed successfully!"
@@ -219,43 +221,31 @@ fi
 if [ "$BUILD_FAISS" = true ]; then
     echo "Building FAISS ($FAISS_BUILD_TYPE)..."
     
-    # Always create the virtual environment if we're building FAISS
-    run_script "$LIB_DIR/20_create_faiss_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
-    
-    # Determine which NumPy venv to use based on FAISS build type
-    if [[ "$FAISS_BUILD_TYPE" == *"mkl"* ]]; then
-        # For MKL FAISS builds, use the MKL NumPy if available, else regular NumPy
-        if [ -d "$NUMPY_MKL_VENV_DIR" ]; then
-            NUMPY_TYPE="numpy_mkl"
-        else
-            NUMPY_TYPE="numpy"
-        fi
-    else
-        # For non-MKL FAISS builds, use regular NumPy
-        NUMPY_TYPE="numpy"
+    # create the virtual environment if we're building FAISS
+
+    if [ "${RUN_FAISS_CREATE_VENV}" = true ]; then
+      run_script "$LIB_DIR/20_create_faiss_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
-    echo "Using NumPy build type: $NUMPY_TYPE for FAISS build"
+    echo "Using NumPy build type: ${NUMPY_BUILD_TYPE} for FAISS build"
     
     if [ "$RUN_FAISS_CONFIGURE" = true ]; then
-        # Pass the NumPy type as an environment variable for configuration
-        NUMPY_TYPE="$NUMPY_TYPE" run_script "$LIB_DIR/21_faiss_configure.sh" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/21_faiss_configure.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     if [ "$RUN_FAISS_BUILD" = true ]; then
-        run_script "$LIB_DIR/22_faiss_build.sh" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/22_faiss_build.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     if [ "$RUN_FAISS_PYTHON_BUILD" = true ]; then
-        run_script "$LIB_DIR/23_faiss_python_package.sh" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/23_faiss_python_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     if [ "$RUN_FAISS_PYTHON_INSTALL" = true ]; then
-        run_script "$LIB_DIR/24_faiss_install_package.sh" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/24_faiss_install_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     if [ "$RUN_FAISS_TEST" = true ]; then
-        run_script "$LIB_DIR/25_faiss_test_package.sh" "$FAISS_BUILD_TYPE"
+        run_script "$LIB_DIR/25_faiss_test_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     
     echo "FAISS build completed successfully!"

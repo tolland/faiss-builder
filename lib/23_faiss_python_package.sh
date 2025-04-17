@@ -5,10 +5,10 @@ set -o pipefail
 
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Get the build type from argument
-BUILD_TYPE=$1
+_NUMPY_BUILD_TYPE=$1
+_FAISS_BUILD_TYPE=$2
 
 source "$SCRIPT_DIR/common.sh"
 
@@ -22,41 +22,29 @@ source_versions
 verify_repositories
 
 # Source MKL if needed
-source_mkl_if_needed "$BUILD_TYPE"
+source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 
 # Get the appropriate venv directory
-FAISS_VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
+FAISS_VENV_DIR=$(get_faiss_venv_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 
-# Determine which build directory to use based on build type
-case "$BUILD_TYPE" in
-    "cpu")
-        BUILD_DIR="${CPU_BUILD_DIR}"
-        ;;
-    "cpu_mkl")
-        BUILD_DIR="${CPU_MKL_BUILD_DIR}"
-        ;;
-    "gpu")
-        BUILD_DIR="${GPU_BUILD_DIR}"
-        ;;
-    "gpu_mkl")
-        BUILD_DIR="${GPU_MKL_BUILD_DIR}"
-        ;;
-esac
+_FAISS_BUILD_DIR=$(get_faiss_build_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 
-_FAISS_DIST_DIR=$(get_faiss_dist_dir "$BUILD_TYPE")
+_FAISS_DIST_DIR=$(get_faiss_dist_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 
 cd "${FAISS_SRC}"
 
 # Check if build directory exists
-if [ ! -d "$BUILD_DIR" ]; then
-    echo "Error: Build directory $BUILD_DIR does not exist. Please run 21_faiss_configure.sh and 22_faiss_build.sh first."
+if [ ! -d "${_FAISS_BUILD_DIR}" ]; then
+    echo "Error: Build directory ${_FAISS_BUILD_DIR} does not exist. Please run 21_faiss_configure.sh and 22_faiss_build.sh first."
     exit 1
 fi
 
 which python
 
 # Build Python package
-cd "$BUILD_DIR/faiss/python"
+cd "${_FAISS_BUILD_DIR}/faiss/python"
+# @TODO this seems to be using the system python
 python setup.py bdist_wheel --dist-dir "${_FAISS_DIST_DIR}"
 
 echo "FAISS Python package built successfully!"
+ls -lah "${_FAISS_DIST_DIR}"

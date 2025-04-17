@@ -5,7 +5,6 @@ set -o pipefail
 
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Get the build type from argument
 _NUMPY_BUILD_TYPE=$1
@@ -26,7 +25,7 @@ verify_repositories
 source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 
 # Get the appropriate venv directory
-_FAISS_VENV_DIR=$(get_faiss_venv_dir "${_FAISS_BUILD_TYPE}")
+_FAISS_VENV_DIR=$(get_faiss_venv_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 
 # Check if a virtual environment is already active
 check_venv_active
@@ -38,7 +37,7 @@ _NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}")
 
 # Install dependencies for building FAISS
 pip install -q --upgrade pip
-pip install -q pytest wheel packaging
+pip install -q pytest wheel packaging scipy
 
 # Install numpy from the appropriate dist directory
 echo "Installing numpy for faiss build..."

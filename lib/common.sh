@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -eu
+set -o pipefail
+
 # Get the directory where this script is located and the project root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
@@ -19,25 +22,16 @@ SUBDIR_FAISS_DISTS="build/dists"
 NUMPY_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/numpy"
 FAISS_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/faiss"
 NUMPY_DISTS="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}"
+FAISS_DISTS="$PROJECT_ROOT/${SUBDIR_FAISS_DISTS}"
 mkdir -p "${SUBDIR_SRCS}"
 mkdir -p "${SUBDIR_VENVS}"
 mkdir -p "${NUMPY_DISTS}"
-FAISS_DISTS="$PROJECT_ROOT/${SUBDIR_FAISS_DISTS}"
 mkdir -p "${FAISS_DISTS}"
 # Build directories
-NUMPY_DIST_DIR="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy"
-NUMPY_DIST_DIR_MKL="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy_mkl"
+NUMPY_DIST_DIR="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/numpy"
+NUMPY_DIST_DIR_MKL="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/numpy_mkl"
 NUMPY_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/numpy_venv${DEV_LOCAL:-""}"
 NUMPY_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/numpy_mkl_venv${DEV_LOCAL:-""}"
-FAISS_CPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_venv${DEV_LOCAL:-""}"
-FAISS_CPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_mkl_venv${DEV_LOCAL:-""}"
-FAISS_GPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_venv${DEV_LOCAL:-""}"
-FAISS_GPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_mkl_venv${DEV_LOCAL:-""}"
-
-FAISS_CPU_DIST_DIR="${FAISS_DISTS}/faiss_cpu"
-FAISS_CPU_MKL_DIST_DIR="${FAISS_DISTS}/faiss_cpu_mkl"
-FAISS_GPU_DIST_DIR="${FAISS_DISTS}/faiss_gpu"
-FAISS_GPU_MKL_DIST_DIR="${FAISS_DISTS}/faiss_gpu_mkl"
 
 # Function to get the NumPy venv directory based on build type
 get_numpy_venv_dir() {
@@ -75,48 +69,25 @@ get_numpy_dist_dir() {
 
 # Function to get the FAISS venv directory based on build type
 get_faiss_venv_dir() {
-    local build_type="$1"
-    case "$build_type" in
-        "cpu")
-            echo "$FAISS_CPU_VENV_DIR"
-            ;;
-        "cpu_mkl")
-            echo "$FAISS_CPU_MKL_VENV_DIR"
-            ;;
-        "gpu")
-            echo "$FAISS_GPU_VENV_DIR"
-            ;;
-        "gpu_mkl")
-            echo "$FAISS_GPU_MKL_VENV_DIR"
-            ;;
-        *)
-            echo "Error: Invalid FAISS build type '$build_type'" >&2
-            exit 1
-            ;;
-    esac
+    local numpy_build_type="$1"
+    local faiss_build_type="$2"
+    echo "$PROJECT_ROOT/$SUBDIR_VENVS/venv_${numpy_build_type}_${faiss_build_type}${DEV_LOCAL:-""}"
 }
 
 # Function to get the FAISS dist dir
 get_faiss_dist_dir() {
-    local build_type="$1"
-    case "$build_type" in
-        "cpu")
-            echo "${FAISS_CPU_DIST_DIR}"
-            ;;
-        "cpu_mkl")
-            echo "${FAISS_CPU_MKL_DIST_DIR}"
-            ;;
-        "gpu")
-            echo "${FAISS_GPU_DIST_DIR}"
-            ;;
-        "gpu_mkl")
-            echo "${FAISS_GPU_MKL_DIST_DIR}"
-            ;;
-        *)
-            echo "Error: Invalid FAISS build type '$build_type'" >&2
-            exit 1
-            ;;
-    esac
+    local numpy_build_type="$1"
+    local faiss_build_type="$2"
+    echo "${FAISS_DISTS}/faiss_${numpy_build_type}_${faiss_build_type}"
+}
+
+
+
+# Build directories (this is relative, should be fully qualified?)
+get_faiss_build_dir() {
+    local numpy_build_type="$1"
+    local faiss_build_type="$2"
+    echo "_build_${numpy_build_type}_${faiss_build_type}"
 }
 
 # Function to determine if MKL should be sourced based on build type
@@ -141,19 +112,13 @@ source_mkl_if_needed() {
     fi
 }
 
-# Build directories
-CPU_BUILD_DIR="_build_cpu"
-CPU_MKL_BUILD_DIR="_build_cpu_mkl"
-GPU_BUILD_DIR="_build_gpu"
-GPU_MKL_BUILD_DIR="_build_gpu_mkl"
-
 # MKL paths and settings
 MKL_ROOT="/opt/intel/oneapi/mkl/2025.1"
 MKL_COMPILER_ROOT="/opt/intel/oneapi/compiler/2025.1"
 TBB_ROOT="/opt/intel/oneapi/tbb/2022.1"
 
 # MKL Libraries
-MKL_LIBRARIES=(
+export MKL_LIBRARIES=(
   "$MKL_ROOT/lib/libmkl_intel_lp64.so"
   "$MKL_ROOT/lib/libmkl_tbb_thread.so"
   "$MKL_ROOT/lib/libmkl_gnu_thread.so"
@@ -166,14 +131,14 @@ MKL_LIBRARIES=(
 )
 
 # Build settings
-CMAKE_BUILD_TYPE="Debug"
-FAISS_OPT_LEVEL="avx2"
-CUDA_ARCHITECTURES="80;86;89;90"
+export CMAKE_BUILD_TYPE="Debug"
+export FAISS_OPT_LEVEL="avx2"
+export CUDA_ARCHITECTURES="80;86;89;90"
 # NUM_PROCS="$(( $(nproc) / 2 ))"
 NUM_PROCS="${NUM_PROCS:-$(( $(nproc) / 2 ))}"
 
 # Flag to indicate common.sh has been sourced
-COMMON_SOURCED="true"
+export COMMON_SOURCED="true"
 
 echo "PROJECT ROOT: $PROJECT_ROOT"
 
@@ -243,6 +208,7 @@ activate_venv() {
 }
 
 # Function to deactivate a virtual environment
+# shellcheck disable=SC2120
 deactivate() {
     if [ -n "${_OLD_VIRTUAL_PATH:-}" ]; then
         PATH="${_OLD_VIRTUAL_PATH:-}";
