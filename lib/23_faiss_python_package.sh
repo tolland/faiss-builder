@@ -51,6 +51,8 @@ if [ ! -d "$BUILD_DIR" ]; then
     exit 1
 fi
 
+which python
+
 # Build Python package
 cd "$BUILD_DIR/faiss/python"
 python setup.py bdist_wheel
