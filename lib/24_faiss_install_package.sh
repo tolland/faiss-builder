@@ -53,7 +53,7 @@ if [ ! -d "$_NUMPY_DIST_DIR" ] || [ -z "$(ls -A "${_NUMPY_DIST_DIR}/"*.whl 2>/de
 fi
 
 # Check for the faiss wheel file
-PYTHON_WHEEL_DIR="$PROJECT_ROOT/faiss/$BUILD_DIR/faiss/python/dist"
+PYTHON_WHEEL_DIR="${FAISS_SRC}/$BUILD_DIR/faiss/python/dist"
 if [ ! -d "$PYTHON_WHEEL_DIR" ] || [ -z "$(ls -A "$PYTHON_WHEEL_DIR"/*.whl 2>/dev/null)" ]; then
     echo "Error: Python wheel not found. Please build the faiss package first."
     exit 1

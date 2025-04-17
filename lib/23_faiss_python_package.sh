@@ -25,25 +25,25 @@ verify_repositories
 source_mkl_if_needed "$BUILD_TYPE"
 
 # Get the appropriate venv directory
-VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
+FAISS_VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
 
 # Determine which build directory to use based on build type
 case "$BUILD_TYPE" in
     "cpu")
-        BUILD_DIR="$CPU_BUILD_DIR"
+        BUILD_DIR="${CPU_BUILD_DIR}"
         ;;
     "cpu_mkl")
-        BUILD_DIR="$CPU_MKL_BUILD_DIR"
+        BUILD_DIR="${CPU_MKL_BUILD_DIR}"
         ;;
     "gpu")
-        BUILD_DIR="$GPU_BUILD_DIR"
+        BUILD_DIR="${GPU_BUILD_DIR}"
         ;;
     "gpu_mkl")
-        BUILD_DIR="$GPU_MKL_BUILD_DIR"
+        BUILD_DIR="${GPU_MKL_BUILD_DIR}"
         ;;
 esac
 
-cd "$PROJECT_ROOT/faiss"
+cd "${FAISS_SRC}"
 
 # Check if build directory exists
 if [ ! -d "$BUILD_DIR" ]; then

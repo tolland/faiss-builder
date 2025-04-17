@@ -50,3 +50,4 @@ pip install --force-reinstall --no-dependencies $WHEEL_DIR/*.whl
 python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"
 
 echo "NumPy installed successfully in $VENV_DIR"
+pip freeze | grep -E '^numpy|^faiss' || echo "no numpy or faiss packages found"

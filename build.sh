@@ -164,13 +164,14 @@ done
 # Function to execute a script and handle errors
 run_script() {
     local script="$1"
-    local script_args="${2:-}"
-    
+    shift
+    local script_args="$@"
+
     echo "========================================="
     echo "Executing $(basename "$script") $script_args..."
     echo "========================================="
-    
-    if ! bash "$script" $script_args; then
+
+    if ! bash "$script" "$@"; then
         echo "Error: $script failed"
         exit 1
     fi
@@ -211,7 +212,7 @@ if [ "$BUILD_FAISS" = true ]; then
     echo "Building FAISS ($FAISS_BUILD_TYPE)..."
     
     # Always create the virtual environment if we're building FAISS
-    run_script "$LIB_DIR/20_create_faiss_venv.sh" "$FAISS_BUILD_TYPE"
+    run_script "$LIB_DIR/20_create_faiss_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     
     # Determine which NumPy venv to use based on FAISS build type
     if [[ "$FAISS_BUILD_TYPE" == *"mkl"* ]]; then

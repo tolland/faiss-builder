@@ -44,3 +44,4 @@ pip install -q packaging
 
 echo "NumPy build virtual environment created successfully!"
 echo "\$VENV_DIR = $VENV_DIR"
+pip freeze | grep -E '^numpy|^faiss' || echo "no numpy or faiss packages found"

@@ -8,7 +8,8 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Get the build type from argument
-BUILD_TYPE=$1
+_NUMPY_BUILD_TYPE=$1
+_FAISS_BUILD_TYPE=$2
 
 source "$SCRIPT_DIR/common.sh"
 
@@ -22,25 +23,27 @@ source_versions
 verify_repositories
 
 # Source MKL if needed
-source_mkl_if_needed "$BUILD_TYPE"
+source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 
 # Get the appropriate venv directory
-VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
+_FAISS_VENV_DIR=$(get_faiss_venv_dir "${_FAISS_BUILD_TYPE}")
 
 # Check if a virtual environment is already active
 check_venv_active
 
 # Setup the virtual environment
-setup_venv "$VENV_DIR"
+setup_venv "${_FAISS_VENV_DIR}"
+
+_NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}")
 
 # Install dependencies for building FAISS
 pip install -q --upgrade pip
 pip install -q pytest wheel packaging
 
-# Install CUDA dependencies for GPU builds
-#if [[ "$BUILD_TYPE" == *"gpu"* ]]; then
-#    pip install -q cupy-cuda12x
-#fi
+# Install numpy from the appropriate dist directory
+echo "Installing numpy for faiss build..."
+"${_FAISS_VENV_DIR}/bin/pip" install --force-reinstall \
+    "${_NUMPY_DIST_DIR}/"numpy-*.whl
 
 echo "FAISS build virtual environment created successfully!"
 pip freeze | grep -E '^numpy|^faiss' || echo "no numpy or faiss packages found"
