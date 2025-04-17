@@ -67,6 +67,7 @@ if [[ ! "$FAISS_BUILD_TYPE" =~ ^(cpu|cpu_mkl|gpu|gpu_mkl)$ ]]; then
 fi
 
 # Initialize flags for build steps
+CHECKOUT_REPOS=true
 BUILD_NUMPY=true
 BUILD_FAISS=true
 RUN_NUMPY_BUILD=true
@@ -90,9 +91,11 @@ while [[ $# -gt 0 ]]; do
             ;;
         --only-numpy)
             BUILD_FAISS=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss)
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --skip-numpy-build)
             RUN_NUMPY_BUILD=false
@@ -121,6 +124,7 @@ while [[ $# -gt 0 ]]; do
             RUN_FAISS_PYTHON_INSTALL=false
             RUN_FAISS_TEST=false
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss-build)
             RUN_FAISS_CONFIGURE=false
@@ -128,6 +132,7 @@ while [[ $# -gt 0 ]]; do
             RUN_FAISS_PYTHON_INSTALL=false
             RUN_FAISS_TEST=false
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss-python-build)
             RUN_FAISS_CONFIGURE=false
@@ -135,6 +140,7 @@ while [[ $# -gt 0 ]]; do
             RUN_FAISS_PYTHON_INSTALL=false
             RUN_FAISS_TEST=false
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss-python-install)
             RUN_FAISS_CONFIGURE=false
@@ -142,6 +148,7 @@ while [[ $# -gt 0 ]]; do
             RUN_FAISS_PYTHON_BUILD=false
             RUN_FAISS_TEST=false
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss-test)
             RUN_FAISS_CONFIGURE=false
@@ -149,6 +156,7 @@ while [[ $# -gt 0 ]]; do
             RUN_FAISS_PYTHON_BUILD=false
             RUN_FAISS_PYTHON_INSTALL=false
             BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
             ;;
         --help)
             display_usage
@@ -186,7 +194,7 @@ if [ ! -f "$PROJECT_ROOT/versions.txt" ]; then
 fi
 
 # Check if repositories exist, if not, checkout them
-if [ ! -d "$PROJECT_ROOT/numpy" ] || [ ! -d "$PROJECT_ROOT/faiss" ]; then
+if [ ! -d "${NUMPY_SRC}" ] || [ ! -d "${FAISS_SRC}" ] || [ "$CHECKOUT_REPOS" = true ]; then
     run_script "$LIB_DIR/01_checkout.sh"
 fi
 
