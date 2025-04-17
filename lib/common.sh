@@ -23,7 +23,7 @@ mkdir -p "${SUBDIR_SRCS}"
 mkdir -p "${SUBDIR_VENVS}"
 mkdir -p "${NUMPY_DISTS}"
 FAISS_DISTS="$PROJECT_ROOT/${SUBDIR_FAISS_DISTS}"
-mkdir -p "${FAISE_DISTS}"
+mkdir -p "${FAISS_DISTS}"
 # Build directories
 NUMPY_DIST_DIR="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy"
 NUMPY_DIST_DIR_MKL="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy_mkl"
