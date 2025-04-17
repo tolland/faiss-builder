@@ -1,3 +1,5 @@
 /faiss
 /numpy
 /*_venv
+/venv_*
+/local

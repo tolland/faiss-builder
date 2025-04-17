@@ -24,33 +24,43 @@ verify_repositories
 source_mkl_if_needed "$BUILD_TYPE"
 
 # Get the appropriate venv directory
-VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
+FAISS_VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
 
 # Determine which build directory to use based on build type
 case "$BUILD_TYPE" in
     "cpu")
         BUILD_DIR="$CPU_BUILD_DIR"
+        _NUMPY_DIST_DIR=$(get_numpy_dist_dir "numpy")
         ;;
     "cpu_mkl")
         BUILD_DIR="$CPU_MKL_BUILD_DIR"
+        _NUMPY_DIST_DIR=$(get_numpy_dist_dir "numpy_mkl")
         ;;
     "gpu")
         BUILD_DIR="$GPU_BUILD_DIR"
+        _NUMPY_DIST_DIR=$(get_numpy_dist_dir "numpy")
         ;;
     "gpu_mkl")
         BUILD_DIR="$GPU_MKL_BUILD_DIR"
+        _NUMPY_DIST_DIR=$(get_numpy_dist_dir "numpy_mkl")
         ;;
 esac
 
-# Check for the wheel file
+# Install the correct numpy for this build type
+if [ ! -d "$_NUMPY_DIST_DIR" ] || [ -z "$(ls -A "${_NUMPY_DIST_DIR}/"*.whl 2>/dev/null)" ]; then
+    echo "Error: Python wheel not found. Please build the numpy package first."
+    exit 1
+fi
+
+# Check for the faiss wheel file
 PYTHON_WHEEL_DIR="$PROJECT_ROOT/faiss/$BUILD_DIR/faiss/python/dist"
 if [ ! -d "$PYTHON_WHEEL_DIR" ] || [ -z "$(ls -A "$PYTHON_WHEEL_DIR"/*.whl 2>/dev/null)" ]; then
-    echo "Error: Python wheel not found. Please run 23_faiss_python_package.sh first."
+    echo "Error: Python wheel not found. Please build the faiss package first."
     exit 1
 fi
 
 # Activate the virtual environment
-activate_venv "$VENV_DIR"
+activate_venv "$FAISS_VENV_DIR"
 
 # Install the wheel
 pip install --force-reinstall --no-dependencies "$PYTHON_WHEEL_DIR"/*.whl
@@ -58,4 +68,5 @@ pip install --force-reinstall --no-dependencies "$PYTHON_WHEEL_DIR"/*.whl
 # Verify installation
 python -c "import faiss; print(f'FAISS version: {faiss.__version__}')"
 
-echo "FAISS package installed successfully in $VENV_DIR"
+echo "FAISS package installed successfully in $FAISS_VENV_DIR"
+pip freeze | grep -E '^numpy|^faiss' || echo "no numpy or faiss packages found"

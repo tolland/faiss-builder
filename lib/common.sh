@@ -5,13 +5,31 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 LIB_DIR="$PROJECT_ROOT/lib"
 
+# Rops
+# shellcheck disable=SC2034
+NUMPY_REPO="https://github.com/numpy/numpy.git"
+# shellcheck disable=SC2034
+FAISS_REPO="https://github.com/facebookresearch/faiss.git"
+
 # Virtual environment paths
-NUMPY_VENV_DIR="$PROJECT_ROOT/numpy_venv${DEV_LOCAL:-""}"
-NUMPY_MKL_VENV_DIR="$PROJECT_ROOT/numpy_mkl_venv${DEV_LOCAL:-""}"
-FAISS_CPU_VENV_DIR="$PROJECT_ROOT/faiss_cpu_venv${DEV_LOCAL:-""}"
-FAISS_CPU_MKL_VENV_DIR="$PROJECT_ROOT/faiss_cpu_mkl_venv${DEV_LOCAL:-""}"
-FAISS_GPU_VENV_DIR="$PROJECT_ROOT/faiss_gpu_venv${DEV_LOCAL:-""}"
-FAISS_GPU_MKL_VENV_DIR="$PROJECT_ROOT/faiss_gpu_mkl_venv${DEV_LOCAL:-""}"
+SUBDIR_SRCS="build/srcs"
+SUBDIR_VENVS="build/venvs"
+SUBDIR_NUMPY_DISTS="build/dists"
+NUMPY_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/numpy"
+FAISS_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/faiss"
+NUMPY_DISTS="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}"
+mkdir -p "${SUBDIR_SRCS}"
+mkdir -p "${SUBDIR_VENVS}"
+mkdir -p "${NUMPY_DISTS}"
+# Build directories
+NUMPY_DIST_DIR="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy"
+NUMPY_DIST_DIR_MKL="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy_mkl"
+NUMPY_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/numpy_venv${DEV_LOCAL:-""}"
+NUMPY_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/numpy_mkl_venv${DEV_LOCAL:-""}"
+FAISS_CPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_venv${DEV_LOCAL:-""}"
+FAISS_CPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_mkl_venv${DEV_LOCAL:-""}"
+FAISS_GPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_venv${DEV_LOCAL:-""}"
+FAISS_GPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_mkl_venv${DEV_LOCAL:-""}"
 
 # Function to get the NumPy venv directory based on build type
 get_numpy_venv_dir() {
@@ -22,6 +40,23 @@ get_numpy_venv_dir() {
             ;;
         "numpy_mkl")
             echo "$NUMPY_MKL_VENV_DIR"
+            ;;
+        *)
+            echo "Error: Invalid NumPy build type '$build_type'" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Function to get the dist directory
+get_numpy_dist_dir() {
+    local build_type="$1"
+    case "$build_type" in
+        "numpy")
+            echo "$NUMPY_DIST_DIR"
+            ;;
+        "numpy_mkl")
+            echo "$NUMPY_DIST_DIR_MKL"
             ;;
         *)
             echo "Error: Invalid NumPy build type '$build_type'" >&2
@@ -56,10 +91,11 @@ get_faiss_venv_dir() {
 # Function to determine if MKL should be sourced based on build type
 needs_mkl() {
     local build_type="$1"
+    echo "checking build type $build_type"
     if [[ "$build_type" == *"_mkl"* || "$build_type" == *"mkl"* ]]; then
         return 0  # true in bash
     else
-        return 1  # false in bash
+        return 1
     fi
 }
 
@@ -67,7 +103,10 @@ needs_mkl() {
 source_mkl_if_needed() {
     local build_type="$1"
     if needs_mkl "$build_type" && [ -z "${MKL_SOURCED:-""}" ]; then
+        echo "sourcing mkl"
         source "$LIB_DIR/mkl.sh"
+    else
+      echo "not sourcing mkl"
     fi
 }
 
@@ -99,7 +138,8 @@ MKL_LIBRARIES=(
 CMAKE_BUILD_TYPE="Debug"
 FAISS_OPT_LEVEL="avx2"
 CUDA_ARCHITECTURES="80;86;89;90"
-NUM_PROCS="$(( $(nproc) / 2 ))"
+# NUM_PROCS="$(( $(nproc) / 2 ))"
+NUM_PROCS="${NUM_PROCS:-$(( $(nproc) / 2 ))}"
 
 # Flag to indicate common.sh has been sourced
 COMMON_SOURCED="true"
@@ -123,7 +163,7 @@ source_versions() {
 
 # Function to verify numpy and faiss exist as siblings
 verify_repositories() {
-    if [ ! -d "$PROJECT_ROOT/numpy" ] || [ ! -d "$PROJECT_ROOT/faiss" ]; then
+    if [ ! -d "${NUMPY_SRC}" ] || [ ! -d "${FAISS_SRC}" ]; then
         echo "Error: Required repositories not found. Please run lib/01_checkout.sh first."
         exit 1
     fi

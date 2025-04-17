@@ -1,24 +1,23 @@
 # Building a Python Package of FAISS
 
-This repo is for building a Python wheel from FAISS (Facebook AI Similarity Search).
+This repo is for building a Python wheel from FAISS (Facebook AI Similarity Search) and NumPy.
 
-It uses the Intel MKL LAPACK and BLAS packages.
+Ideally it uses the Intel MKL LAPACK and BLAS packages. However, you can build non-mkl packages with `build.sh numpy cpu` or `build.sh numpy gpu`. Currently, the mkl on or off status has to be consistent between both numpy and faiss build type. so the following have been tested:
 
-## Project Structure
+## Without Mkl
 
-```
-faiss-proj/
-├── lib/                  # Library scripts and utilities
-│   ├── 00_versions.sh    # Generate versions.txt file
-│   ├── 01_checkout.sh    # Clone/checkout repositories
-│   ├── 10_*.sh           # NumPy build scripts
-│   ├── 20_*.sh           # FAISS build scripts
-│   ├── common.sh         # Common functions and variables
-│   └── mkl.sh            # MKL environment setup
-├── tests/                # Test and benchmark scripts
-├── build.sh              # Main build entry point
-└── benchmark.sh          # Benchmark entry point
-```
+- build.sh numpy cpu
+- build.sh numpy gpu
+
+If you don't use mkl, you can ignore the numpy wheel that gets built at the same time, and just use the pypi one.
+
+## With mkl
+
+- build.sh numpy_mkl cpu_mkl
+- build.sh numpy_mkl gpu_mkl
+
+If building with MKL, then you should need both the numpy-mkl wheel and the faiss one for it to work. Though in limited tests I was able to run openblas numpy and mkl faiss through the tests, but I sometimes saw some errors. If you have gone to the effort of getting MKL then you might as well use it for both.
+
 
 ## Building FAISS
 

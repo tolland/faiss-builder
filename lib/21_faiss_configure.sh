@@ -6,10 +6,11 @@ set -o pipefail
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-source "$SCRIPT_DIR/common.sh"
 
 # Get the build type from argument
 BUILD_TYPE=$1
+
+source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory
 ensure_project_root
@@ -22,9 +23,6 @@ verify_repositories
 
 # Source MKL if needed
 source_mkl_if_needed "$BUILD_TYPE"
-
-# Get the appropriate venv directory
-VENV_DIR=$(get_faiss_venv_dir "$BUILD_TYPE")
 
 # Determine which build directory to use based on build type
 case "$BUILD_TYPE" in
@@ -42,7 +40,7 @@ case "$BUILD_TYPE" in
         ;;
 esac
 
-cd "$PROJECT_ROOT/faiss"
+cd "${FAISS_SRC}"
 
 # Base CMake command
 CMAKE_CMD="cmake -B ${BUILD_DIR} \
@@ -85,11 +83,13 @@ case "$BUILD_TYPE" in
           .
         ;;
     "gpu")
+    set -x
         $CMAKE_CMD \
           -DFAISS_ENABLE_GPU=ON \
           -DFAISS_OPT_LEVEL=$FAISS_OPT_LEVEL \
           -DCMAKE_CUDA_ARCHITECTURES="$CUDA_ARCHITECTURES" \
           .
+          set +x
         ;;
     "gpu_mkl")
         $CMAKE_CMD \

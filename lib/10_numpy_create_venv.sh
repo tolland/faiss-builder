@@ -6,10 +6,11 @@ set -o pipefail
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-source "$SCRIPT_DIR/common.sh"
 
 # Get the build type from argument
-VENV_TYPE=$1
+BUILD_TYPE=$1
+
+source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory
 ensure_project_root
@@ -21,10 +22,10 @@ source_versions
 verify_repositories
 
 # Source MKL if needed
-source_mkl_if_needed "$VENV_TYPE"
+source_mkl_if_needed "$BUILD_TYPE"
 
 # Get the appropriate venv directory
-VENV_DIR=$(get_numpy_venv_dir "$VENV_TYPE")
+VENV_DIR=$(get_numpy_venv_dir "$BUILD_TYPE")
 
 # Check if a virtual environment is already active
 check_venv_active

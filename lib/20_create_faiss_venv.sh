@@ -6,10 +6,11 @@ set -o pipefail
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-source "$SCRIPT_DIR/common.sh"
 
 # Get the build type from argument
 BUILD_TYPE=$1
+
+source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory
 ensure_project_root
@@ -34,14 +35,12 @@ setup_venv "$VENV_DIR"
 
 # Install dependencies for building FAISS
 pip install -q --upgrade pip
-pip install -q numpy
-pip install -q pytest
-pip install -q wheel
-pip install -q swig
+pip install -q pytest wheel packaging
 
 # Install CUDA dependencies for GPU builds
-if [[ "$BUILD_TYPE" == *"gpu"* ]]; then
-    pip install -q cupy-cuda12x
-fi
+#if [[ "$BUILD_TYPE" == *"gpu"* ]]; then
+#    pip install -q cupy-cuda12x
+#fi
 
 echo "FAISS build virtual environment created successfully!"
+pip freeze | grep -E '^numpy|^faiss' || echo "no numpy or faiss packages found"

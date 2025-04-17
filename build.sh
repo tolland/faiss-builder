@@ -25,6 +25,7 @@ display_usage() {
     echo "  gpu_mkl   - Build FAISS with GPU support and MKL"
     echo ""
     echo "Options:"
+    echo "  --num-procs N              - Number of processors to use (default: nproc/2)"
     echo "  --only-numpy                - Only build NumPy, skip FAISS build"
     echo "  --only-faiss                - Only build FAISS, skip NumPy build"
     echo "  --skip-numpy-build          - Skip NumPy build step"
@@ -79,6 +80,14 @@ RUN_FAISS_TEST=true
 # Parse options
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --num-procs)
+            if [[ -z "$2" ]]; then
+                echo "Error: --num-procs requires a value"
+                display_usage
+            fi
+            export NUM_PROCS="$2"
+            shift
+            ;;
         --only-numpy)
             BUILD_FAISS=false
             ;;

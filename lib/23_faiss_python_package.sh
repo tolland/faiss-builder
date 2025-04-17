@@ -6,10 +6,11 @@ set -o pipefail
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-source "$SCRIPT_DIR/common.sh"
 
 # Get the build type from argument
 BUILD_TYPE=$1
+
+source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory
 ensure_project_root

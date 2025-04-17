@@ -6,10 +6,11 @@ set -o pipefail
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-source "$SCRIPT_DIR/common.sh"
 
 # Get the build type from argument
-VENV_TYPE=$1
+BUILD_TYPE=$1
+
+source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory
 ensure_project_root
@@ -21,37 +22,38 @@ source_versions
 verify_repositories
 
 # Source MKL if needed
-source_mkl_if_needed "$VENV_TYPE"
+source_mkl_if_needed "$BUILD_TYPE"
 
 # Get the appropriate venv directory
-VENV_DIR=$(get_numpy_venv_dir "$VENV_TYPE")
+NUMPY_VENV_DIR=$(get_numpy_venv_dir "$BUILD_TYPE")
+
+# Get the dist directory
+_NUMPY_DIST_DIR=$(get_numpy_dist_dir "$BUILD_TYPE")
 
 # Activate the virtual environment
-activate_venv "$VENV_DIR"
-
-# Navigate to NumPy directory
-cd "$PROJECT_ROOT/numpy"
-
-# Clean any previous builds
-rm -rf build dist dist_numpy
+activate_venv "$NUMPY_VENV_DIR"
 
 # Create output directory
-mkdir -p dist_numpy
+mkdir -p "${_NUMPY_DIST_DIR}"
 
 # Install build package if not already installed
 pip install -q build
 
-# Build the package
-if [ "$VENV_TYPE" = "numpy_mkl" ]; then
-    # Build with MKL
-    python -m build -Csetup-args=-Dblas=mkl -Csetup-args=-Dlapack=mkl --outdir dist_numpy
-else
-    # Standard build with explicit BLAS and LAPACK settings
-    python -m build -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir dist_numpy
+if [ -d "$_NUMPY_DIST_DIR" ] && [ ! -z "$(ls -A $_NUMPY_DIST_DIR/*.whl 2>/dev/null)" ]; then
+  echo "numpy already exists in \"${_NUMPY_DIST_DIR}\" - please delete to recreate"
+  exit 0
 fi
 
-# Copy wheel files to dist directory for consistency with other scripts
-mkdir -p dist
-cp dist_numpy/*.whl dist/
+cd "${NUMPY_SRC}"
 
-echo "NumPy package built successfully in dist_numpy/"
+# Build the package
+if [ "$BUILD_TYPE" = "numpy_mkl" ]; then
+    # Build with MKL
+    python -m build -Csetup-args=-Dblas=mkl -Csetup-args=-Dlapack=mkl --outdir "${_NUMPY_DIST_DIR}"
+else
+    # Standard build with explicit BLAS and LAPACK settings
+    python -m build -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir "${_NUMPY_DIST_DIR}"
+fi
+
+
+echo "NumPy package built successfully in \"${_NUMPY_DIST_DIR}\"/"
