@@ -52,9 +52,9 @@ if [ ! -d "$_NUMPY_DIST_DIR" ] || [ -z "$(ls -A "${_NUMPY_DIST_DIR}/"*.whl 2>/de
     exit 1
 fi
 
+_FAISS_DIST_DIR=$(get_faiss_dist_dir "$BUILD_TYPE")
 # Check for the faiss wheel file
-PYTHON_WHEEL_DIR="${FAISS_SRC}/$BUILD_DIR/faiss/python/dist"
-if [ ! -d "$PYTHON_WHEEL_DIR" ] || [ -z "$(ls -A "$PYTHON_WHEEL_DIR"/*.whl 2>/dev/null)" ]; then
+if [ ! -d "${_FAISS_DIST_DIR}" ] || [ -z "$(ls -A "${_FAISS_DIST_DIR}"/*.whl 2>/dev/null)" ]; then
     echo "Error: Python wheel not found. Please build the faiss package first."
     exit 1
 fi
@@ -63,7 +63,7 @@ fi
 activate_venv "$FAISS_VENV_DIR"
 
 # Install the wheel
-pip install --force-reinstall --no-dependencies "$PYTHON_WHEEL_DIR"/*.whl
+pip install --force-reinstall --no-dependencies "${_FAISS_DIST_DIR}"/*.whl
 
 # Verify installation
 python -c "import faiss; print(f'FAISS version: {faiss.__version__}')"

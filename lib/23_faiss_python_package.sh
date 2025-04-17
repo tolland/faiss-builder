@@ -43,6 +43,8 @@ case "$BUILD_TYPE" in
         ;;
 esac
 
+_FAISS_DIST_DIR=$(get_faiss_dist_dir "$BUILD_TYPE")
+
 cd "${FAISS_SRC}"
 
 # Check if build directory exists
@@ -55,6 +57,6 @@ which python
 
 # Build Python package
 cd "$BUILD_DIR/faiss/python"
-python setup.py bdist_wheel
+python setup.py bdist_wheel --dist-dir "${_FAISS_DIST_DIR}"
 
 echo "FAISS Python package built successfully!"

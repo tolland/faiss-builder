@@ -15,12 +15,15 @@ FAISS_REPO="https://github.com/facebookresearch/faiss.git"
 SUBDIR_SRCS="build/srcs"
 SUBDIR_VENVS="build/venvs"
 SUBDIR_NUMPY_DISTS="build/dists"
+SUBDIR_FAISS_DISTS="build/dists"
 NUMPY_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/numpy"
 FAISS_SRC="$PROJECT_ROOT/${SUBDIR_SRCS}/faiss"
 NUMPY_DISTS="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}"
 mkdir -p "${SUBDIR_SRCS}"
 mkdir -p "${SUBDIR_VENVS}"
 mkdir -p "${NUMPY_DISTS}"
+FAISS_DISTS="$PROJECT_ROOT/${SUBDIR_FAISS_DISTS}"
+mkdir -p "${FAISE_DISTS}"
 # Build directories
 NUMPY_DIST_DIR="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy"
 NUMPY_DIST_DIR_MKL="$PROJECT_ROOT/${SUBDIR_NUMPY_DISTS}/dist_numpy_mkl"
@@ -30,6 +33,11 @@ FAISS_CPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_venv${DEV_LOCAL:-""}"
 FAISS_CPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_cpu_mkl_venv${DEV_LOCAL:-""}"
 FAISS_GPU_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_venv${DEV_LOCAL:-""}"
 FAISS_GPU_MKL_VENV_DIR="$PROJECT_ROOT/$SUBDIR_VENVS/faiss_gpu_mkl_venv${DEV_LOCAL:-""}"
+
+FAISS_CPU_DIST_DIR="${FAISS_DISTS}/faiss_cpu"
+FAISS_CPU_MKL_DIST_DIR="${FAISS_DISTS}/faiss_cpu_mkl"
+FAISS_GPU_DIST_DIR="${FAISS_DISTS}/faiss_gpu"
+FAISS_GPU_MKL_DIST_DIR="${FAISS_DISTS}/faiss_gpu_mkl"
 
 # Function to get the NumPy venv directory based on build type
 get_numpy_venv_dir() {
@@ -80,6 +88,29 @@ get_faiss_venv_dir() {
             ;;
         "gpu_mkl")
             echo "$FAISS_GPU_MKL_VENV_DIR"
+            ;;
+        *)
+            echo "Error: Invalid FAISS build type '$build_type'" >&2
+            exit 1
+            ;;
+    esac
+}
+
+# Function to get the FAISS dist dir
+get_faiss_dist_dir() {
+    local build_type="$1"
+    case "$build_type" in
+        "cpu")
+            echo "${FAISS_CPU_DIST_DIR}"
+            ;;
+        "cpu_mkl")
+            echo "${FAISS_CPU_MKL_DIST_DIR}"
+            ;;
+        "gpu")
+            echo "${FAISS_GPU_DIST_DIR}"
+            ;;
+        "gpu_mkl")
+            echo "${FAISS_GPU_MKL_DIST_DIR}"
             ;;
         *)
             echo "Error: Invalid FAISS build type '$build_type'" >&2
