@@ -40,11 +40,19 @@ if [[ ! "$BUILD_TYPE" =~ ^(cpu|cpu_mkl|gpu|gpu_mkl)$ ]]; then
     display_usage
 fi
 
+# Initialize flags for build steps
+RUN_BENCHMARKS=true
+RUN_PLOTTING=false
+
 # Parse options
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --help)
             display_usage
+            ;;
+        --only-plot)
+            RUN_BENCHMARKS=false
+            RUN_PLOTTING=true
             ;;
         *)
             echo "Error: Unknown option: $1"
@@ -54,8 +62,18 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-# Run the benchmarking script
-echo "Running benchmarks for $BUILD_TYPE..."
-bash "$LIB_DIR/26_faiss_benchmarking.sh" "$BUILD_TYPE"
+if [ "${RUN_BENCHMARKS}" = true ]; then
+    # Run the benchmarking script
+    echo "Running benchmarks for $BUILD_TYPE..."
+    bash "$LIB_DIR/26_faiss_benchmarking.sh" "$BUILD_TYPE"
 
-echo "Benchmarking completed!"
+    echo "Benchmarking completed!"
+fi
+
+if [ "${RUN_PLOTTING}" = true ]; then
+    # Run the benchmarking script
+    echo "Running plot generator for $BUILD_TYPE..."
+    bash "$LIB_DIR/27_faiss_benchmarking_plots.sh" "$BUILD_TYPE"
+
+    echo "Plotting completed!"
+fi

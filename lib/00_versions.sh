@@ -5,7 +5,6 @@ set -o pipefail
 
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 source "$SCRIPT_DIR/common.sh"
 
 # Ensure we're in the project root directory

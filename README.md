@@ -1,92 +1,50 @@
-# Building a Python Package of FAISS
+# Building a Python Package of FAISS with MKL and CUDA
 
-This repo is for building a Python wheel from FAISS (Facebook AI Similarity Search) and NumPy.
+This repo is for building a Python wheel from FAISS (Facebook AI Similarity Search).
+
+> "Faiss is a library for efficient similarity search and clustering of dense vectors. It contains algorithms that search
+> in sets of vectors of any size, up to ones that possibly do not fit in RAM. It also contains supporting code for
+> evaluation and parameter tuning. Faiss is written in C++ with complete wrappers for Python/numpy. Some of the most
+> useful algorithms are implemented on the GPU. It is developed primarily at Meta's Fundamental AI Research group." - https://github.com/facebookresearch/faiss
+
+Faiss can be compiled with Intel Math Kernel (MKL) and CUDA libraries, so I have included those build options. Faiss depends on numpy, which can also be compiled with MKL support, so I am doing both of these together for convenience. [^1]
+
+The repo for the faiss package on pypi is this one - https://github.com/kyamagu/faiss-wheels, if you just want to get faiss installed, you probably want that one instead.
+
+## Background
+
+After upgrading my system python to 3.13, I noticed that I wasn't able to "pip install faiss" anymore, so I set about the task of building the package locally. Little did I know, that this would be a week-long rabbit hole involving learning about how to optimize cmake projects with ninja, the complexities of SWIG, benchmarking and the various types of Vector search algorithms.
+
+
+
 
 Ideally it uses the Intel MKL LAPACK and BLAS packages. However, you can build non-mkl packages with `build.sh numpy cpu` or `build.sh numpy gpu`. Currently, the mkl on or off status has to be consistent between both numpy and faiss build type. so the following have been tested:
 
-## Without Mkl
+### A chrts
 
-- build.sh numpy cpu
-- build.sh numpy gpu
+![performance_comparison_smoke_linear.png](benchmarks/charts/performance_comparison_smoke_linear.png)
 
-If you don't use mkl, you can ignore the numpy wheel that gets built at the same time, and just use the pypi one.
-
-## With mkl
-
-- build.sh numpy_mkl cpu_mkl
-- build.sh numpy_mkl gpu_mkl
-
-If building with MKL, then you should need both the numpy-mkl wheel and the faiss one for it to work. Though in limited tests I was able to run openblas numpy and mkl faiss through the tests, but I sometimes saw some errors. If you have gone to the effort of getting MKL then you might as well use it for both.
+### Another chart
 
 
-## Building FAISS
+<img src="benchmarks/charts/chart_test_search_performance%5Bflat-small%5D.svg" width="400" alt=""/> <img src="benchmarks/charts/chart_test_search_performance%5Bivf-small%5D.svg" width="400" alt=""/> 
 
-The main entry point for building FAISS is the `build.sh` script:
+<div id="image-table">
+    <table>
+	    <tr>
+    	    <td style="padding:10px">
+        	    <img src="benchmarks/charts/chart_test_search_performance%5Bflat-small%5D.svg" width="200"/>
+      	    </td>
+            <td style="padding:10px">
+            	<img src="benchmarks/charts/performance_comparison_smoke_linear.png" width="300"/>
+            </td>
+            <td style="padding:10px">
+            	<img src="benchmarks/charts/performance_comparison_smoke_linear.png" width="300"/>
+            </td>
+        </tr>
+    </table>
+</div>
 
-```bash
-./build.sh <numpy_build_type> <faiss_build_type> [options]
-```
-
-### NumPy Build Types
-
-- `numpy` - Build NumPy without MKL
-- `numpy_mkl` - Build NumPy with MKL
-
-### FAISS Build Types
-
-- `cpu` - Build FAISS for CPU only
-- `cpu_mkl` - Build FAISS for CPU with MKL
-- `gpu` - Build FAISS with GPU support
-- `gpu_mkl` - Build FAISS with GPU support and MKL
-
-### Build Options
-
-- `--only-numpy` - Only build NumPy, skip FAISS build
-- `--only-faiss` - Only build FAISS, skip NumPy build
-- `--skip-numpy-build` - Skip NumPy build step
-- `--skip-numpy-install` - Skip NumPy install step
-- `--skip-faiss-configure` - Skip FAISS configure step
-- `--skip-faiss-build` - Skip FAISS build step
-- `--skip-faiss-python-build` - Skip FAISS Python package build step
-- `--skip-faiss-python-install` - Skip FAISS Python package install step
-- `--skip-faiss-test` - Skip FAISS test step
-- `--only-faiss-configure` - Only run FAISS configure step
-- `--only-faiss-build` - Only run FAISS build step
-- `--only-faiss-python-build` - Only run FAISS Python package build step
-- `--only-faiss-python-install` - Only run FAISS Python package install step
-- `--only-faiss-test` - Only run FAISS test step
-
-### Examples
-
-Build FAISS with CPU and MKL:
-```bash
-./build.sh numpy_mkl cpu_mkl
-```
-
-Build only NumPy with MKL:
-```bash
-./build.sh numpy_mkl cpu_mkl --only-numpy
-```
-
-Build FAISS with GPU, skipping tests:
-```bash
-./build.sh numpy gpu --skip-faiss-test
-```
-
-Only run FAISS configuration step:
-```bash
-./build.sh numpy cpu --only-faiss-configure
-```
-
-## Running Benchmarks
-
-To run benchmarks on a built FAISS version:
-
-```bash
-./benchmark.sh <build_type>
-```
-
-Where `<build_type>` is one of: `cpu`, `cpu_mkl`, `gpu`, or `gpu_mkl`.
 
 ## Performance Benchmarks
 
@@ -138,3 +96,5 @@ For development purposes, you can append `_local` to the environment name by set
 ```bash
 DEV_LOCAL="_local" ./build.sh numpy cpu
 ```
+
+[^1]: I was originally under the impression that you couldn't run faiss with MKL and vanilla numpy (https://github.com/facebookresearch/faiss/issues/1393#issuecomment-1662335238) however I seemed to be able to run both together. 

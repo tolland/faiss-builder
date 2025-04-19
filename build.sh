@@ -151,6 +151,16 @@ while [[ $# -gt 0 ]]; do
             BUILD_NUMPY=false
             CHECKOUT_REPOS=false
             ;;
+        --only-faiss-venv)
+            RUN_FAISS_CREATE_VENV=true
+            RUN_FAISS_CONFIGURE=false
+            RUN_FAISS_BUILD=false
+            RUN_FAISS_PYTHON_BUILD=false
+            RUN_FAISS_PYTHON_INSTALL=false
+            RUN_FAISS_TEST=false
+            BUILD_NUMPY=false
+            CHECKOUT_REPOS=false
+            ;;
         --only-faiss-test)
             # RUN_FAISS_CREATE_VENV=false
             RUN_FAISS_CONFIGURE=false

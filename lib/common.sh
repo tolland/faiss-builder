@@ -112,6 +112,30 @@ source_mkl_if_needed() {
     fi
 }
 
+# get preferred numpy from faiss build type
+get_numpy_build_type() {
+    local build_type="$1"
+    case "${build_type}" in
+        "cpu")
+            echo "numpy"
+            ;;
+        "cpu_mkl")
+            echo "numpy_mkl"
+            ;;
+        "gpu")
+            echo "numpy"
+            ;;
+        "gpu_mkl")
+            echo "numpy_mkl"
+            ;;
+        *)
+            echo "Error: Invalid build type 'build_type'"
+            echo "Valid build types: cpu, cpu_mkl, gpu, gpu_mkl"
+            exit 1
+            ;;
+    esac
+}
+
 # MKL paths and settings
 MKL_ROOT="/opt/intel/oneapi/mkl/2025.1"
 MKL_COMPILER_ROOT="/opt/intel/oneapi/compiler/2025.1"

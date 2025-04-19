@@ -37,11 +37,8 @@ setup_venv "$VENV_DIR"
 # Install dependencies for building NumPy
 pip install -q --upgrade pip
 pip install -q cython
-pip install -q wheel
-pip install -q pytest
-pip install -q build
-pip install -q setuptools
-pip install -q packaging
+pip install -q pytest pytest-timeout pygal
+pip install -q build setuptools packaging
 
 echo "NumPy build virtual environment created successfully!"
 echo "\$VENV_DIR = $VENV_DIR"

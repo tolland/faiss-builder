@@ -37,7 +37,7 @@ _NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}")
 
 # Install dependencies for building FAISS
 pip install -q --upgrade pip
-pip install -q pytest wheel packaging scipy
+pip install -q pytest wheel packaging scipy pytest-timeout pygal rich pytest-benchmark[histogram] matplotlib
 
 # Install numpy from the appropriate dist directory
 echo "Installing numpy for faiss build..."
