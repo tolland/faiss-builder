@@ -54,13 +54,13 @@ case "${_FAISS_BUILD_TYPE}" in
     "cpu")
         $CMAKE_CMD \
           -DFAISS_ENABLE_GPU=OFF \
-          -DFAISS_OPT_LEVEL=$FAISS_OPT_LEVEL \
+          -DFAISS_OPT_LEVEL=${FAISS_OPT_LEVEL} \
           .
         ;;
     "cpu_mkl")
         $CMAKE_CMD \
           -DFAISS_ENABLE_GPU=OFF \
-          -DFAISS_OPT_LEVEL=$FAISS_OPT_LEVEL \
+          -DFAISS_OPT_LEVEL=${FAISS_OPT_LEVEL} \
           -DBLA_VENDOR=Intel10_64lp \
           -DMKL_LIBRARIES="$(IFS=';'; echo "${MKL_LIBRARIES[*]}")" \
           .

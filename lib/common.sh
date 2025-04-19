@@ -3,16 +3,41 @@
 set -eu
 set -o pipefail
 
-# Get the directory where this script is located and the project root directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
-LIB_DIR="$PROJECT_ROOT/lib"
-
 # Rops
 # shellcheck disable=SC2034
 NUMPY_REPO="https://github.com/numpy/numpy.git"
 # shellcheck disable=SC2034
 FAISS_REPO="https://github.com/facebookresearch/faiss.git"
+
+# MKL paths and settings
+MKL_ROOT="/opt/intel/oneapi/mkl/2025.1"
+MKL_COMPILER_ROOT="/opt/intel/oneapi/compiler/2025.1"
+TBB_ROOT="/opt/intel/oneapi/tbb/2022.1"
+
+# MKL Libraries
+export MKL_LIBRARIES=(
+  "$MKL_ROOT/lib/libmkl_intel_lp64.so"
+  "$MKL_ROOT/lib/libmkl_tbb_thread.so"
+  "$MKL_ROOT/lib/libmkl_gnu_thread.so"
+  "$MKL_ROOT/lib/libmkl_core.so"
+  "$MKL_ROOT/lib/libmkl_intel_thread.so"
+  "$MKL_ROOT/lib/intel64/libmkl_intel_lp64.so"
+  "$MKL_COMPILER_ROOT/lib/libiomp5.so"
+  "$MKL_ROOT/lib/libmkl_gf_lp64.so"
+  "$TBB_ROOT/lib/libtbb.so"
+)
+
+# Build settings
+export CMAKE_BUILD_TYPE="Debug"
+export FAISS_OPT_LEVEL="avx2"
+export CUDA_ARCHITECTURES="80;86;89;90"
+# NUM_PROCS="$(( $(nproc) / 2 ))"
+NUM_PROCS="${NUM_PROCS:-$(( $(nproc) / 2 ))}"
+
+# Get the directory where this script is located and the project root directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
+LIB_DIR="$PROJECT_ROOT/lib"
 
 # Virtual environment paths
 SUBDIR_SRCS="build/srcs"
@@ -136,30 +161,6 @@ get_numpy_build_type() {
     esac
 }
 
-# MKL paths and settings
-MKL_ROOT="/opt/intel/oneapi/mkl/2025.1"
-MKL_COMPILER_ROOT="/opt/intel/oneapi/compiler/2025.1"
-TBB_ROOT="/opt/intel/oneapi/tbb/2022.1"
-
-# MKL Libraries
-export MKL_LIBRARIES=(
-  "$MKL_ROOT/lib/libmkl_intel_lp64.so"
-  "$MKL_ROOT/lib/libmkl_tbb_thread.so"
-  "$MKL_ROOT/lib/libmkl_gnu_thread.so"
-  "$MKL_ROOT/lib/libmkl_core.so"
-  "$MKL_ROOT/lib/libmkl_intel_thread.so"
-  "$MKL_ROOT/lib/intel64/libmkl_intel_lp64.so"
-  "$MKL_COMPILER_ROOT/lib/libiomp5.so"
-  "$MKL_ROOT/lib/libmkl_gf_lp64.so"
-  "$TBB_ROOT/lib/libtbb.so"
-)
-
-# Build settings
-export CMAKE_BUILD_TYPE="Debug"
-export FAISS_OPT_LEVEL="avx2"
-export CUDA_ARCHITECTURES="80;86;89;90"
-# NUM_PROCS="$(( $(nproc) / 2 ))"
-NUM_PROCS="${NUM_PROCS:-$(( $(nproc) / 2 ))}"
 
 # Flag to indicate common.sh has been sourced
 export COMMON_SOURCED="true"
@@ -193,7 +194,7 @@ verify_repositories() {
 run_command() {
     local cmd="$1"
     local description="${2:-$cmd}"
-    
+
     echo "Running: $description"
     if ! eval "$cmd"; then
         echo "Error: Failed to execute: $description"
@@ -205,14 +206,14 @@ run_command() {
 setup_venv() {
     local venv_dir="$1"
     local requirements_file="${2:-}"
-    
+
     if [ ! -d "$venv_dir" ]; then
         run_command "python3 -m venv \"$venv_dir\"" "Creating virtual environment in $venv_dir"
     fi
-    
+
     # Activate the virtual environment
     source "$venv_dir/bin/activate"
-    
+
     # Install requirements if specified
     if [ -n "$requirements_file" ] && [ -f "$requirements_file" ]; then
         run_command "pip install -r \"$requirements_file\"" "Installing requirements from $requirements_file"

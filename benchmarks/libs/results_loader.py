@@ -103,20 +103,3 @@ def load_data_into_dicts():
 
     return basic_search_data,  benchmarks_dict, build_type_dict,
     # end of repro logic
-
-    # for benchmark in benchmark_dict[build_type]:
-    #     if "group" in benchmark:
-    #         group = benchmark["group"]
-    #         scale_name = benchmark["params"]["scale"]["name"]
-    #         if group == "generic-performance-comparison":
-    #             benchmark_dict[benchmark["name"]] = benchmark
-    #             basic_search_data[scale_name].append((times, stddevs))
-
-    # for build_type, benchmarks in benchmark_dict.items():
-    #     for benchmark in benchmarks:
-    #         if (
-    #             benchmark["name"].startswith(f"{build_type}-{index_type}-{scale}")
-    #             and "stats" in benchmark
-    #         ):
-    #             times.append(benchmark["stats"]["mean"])
-    #             stddevs.append(benchmark["stats"]["stddev"])

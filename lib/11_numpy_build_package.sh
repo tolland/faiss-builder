@@ -5,7 +5,6 @@ set -o pipefail
 
 # Source common functions and variables
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-PROJECT_ROOT="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 # Get the build type from argument
 _NUMPY_BUILD_TYPE=$1
@@ -55,6 +54,5 @@ else
     # Standard build with explicit BLAS and LAPACK settings
     python -m build -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir "${_NUMPY_DIST_DIR}"
 fi
-
 
 echo "NumPy package built successfully in \"${_NUMPY_DIST_DIR}\"/"

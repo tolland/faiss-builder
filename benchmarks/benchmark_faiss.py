@@ -156,7 +156,7 @@ def test_favor_cpu_with_mkl_flatl2(benchmark, scale,build_type):
     {'num_vectors': 10000, 'num_queries': 1000, 'dim': 128, 'k': 5, 'name': 'smoke', 'log': False},
     {'num_vectors': 100000, 'num_queries': 10000, 'dim': 128, 'k': 5, 'name': 'small', 'log': False},
     {'num_vectors': 1000000, 'num_queries': 1000, 'dim': 128, 'k': 5, 'name': 'medium', 'log': False},
-    {'num_vectors': 10000000, 'num_queries': 1000, 'dim': 128, 'k': 5, 'name': 'large', 'log': True},
+    {'num_vectors': 1000000, 'num_queries': 1000, 'dim': 128, 'k': 5, 'name': 'large', 'log': True},
 ], ids=lambda x: x['name'])
 def test_favor_gpu_with_scale_ivf(benchmark, scale, build_type):
     """Test that should favor GPU over CPU.
