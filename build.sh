@@ -27,6 +27,7 @@ display_usage() {
     echo "Options:"
     echo "  --num-procs N              - Number of processors to use (default: nproc/2)"
     echo "  --only-numpy                - Only build NumPy, skip FAISS build"
+    echo "  --only-versions                - Only update versions.txt"
     echo "  --only-faiss                - Only build FAISS, skip NumPy build"
     echo "  --skip-numpy-build          - Skip NumPy build step"
     echo "  --skip-numpy-install        - Skip NumPy install step"
@@ -67,6 +68,7 @@ if [[ ! "$FAISS_BUILD_TYPE" =~ ^(cpu|cpu_mkl|gpu|gpu_mkl)$ ]]; then
 fi
 
 # Initialize flags for build steps
+GET_VERSIONS=true
 CHECKOUT_REPOS=true
 BUILD_NUMPY=true
 BUILD_FAISS=true
@@ -78,6 +80,7 @@ RUN_FAISS_BUILD=true
 RUN_FAISS_PYTHON_BUILD=true
 RUN_FAISS_PYTHON_INSTALL=true
 RUN_FAISS_TEST=true
+FORCE_STEPS=false
 
 # Parse options
 while [[ $# -gt 0 ]]; do
@@ -90,9 +93,27 @@ while [[ $# -gt 0 ]]; do
             export NUM_PROCS="$2"
             shift
             ;;
+        --only-versions)
+          GET_VERSIONS=true
+          CHECKOUT_REPOS=false
+          BUILD_NUMPY=false
+          BUILD_FAISS=false
+          RUN_NUMPY_BUILD=false
+          RUN_NUMPY_INSTALL=false
+          RUN_FAISS_CREATE_VENV=false
+          RUN_FAISS_CONFIGURE=false
+          RUN_FAISS_BUILD=false
+          RUN_FAISS_PYTHON_BUILD=false
+          RUN_FAISS_PYTHON_INSTALL=false
+          RUN_FAISS_TEST=false
+          ;;
         --only-numpy)
             BUILD_FAISS=false
             CHECKOUT_REPOS=false
+            ;;
+        --force)
+            # shellcheck disable=SC2034
+            FORCE_STEPS=true
             ;;
         --only-faiss)
             BUILD_NUMPY=false
@@ -195,14 +216,14 @@ run_script() {
         echo "Error: $script failed"
         exit 1
     fi
-    
+
     echo "Completed $(basename "$script")"
     echo "-----------------------------------------"
 }
 
 # Ensure we have versions.txt
-if [ ! -f "$PROJECT_ROOT/versions.txt" ]; then
-    run_script "$LIB_DIR/00_versions.sh"
+if [ ! -f "$PROJECT_ROOT/versions.txt" ] || [ "${GET_VERSIONS}" = true ]; then
+    run_script "$LIB_DIR/00_versions.sh" "${FORCE_STEPS}"
 fi
 
 # Check if repositories exist, if not, checkout them
@@ -213,16 +234,16 @@ fi
 # Build NumPy if required
 if [ "$BUILD_NUMPY" = true ]; then
     echo "Building NumPy ($NUMPY_BUILD_TYPE)..."
-    
+
     if [ "$RUN_NUMPY_BUILD" = true ]; then
         run_script "$LIB_DIR/10_numpy_create_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
         run_script "$LIB_DIR/11_numpy_build_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     if [ "$RUN_NUMPY_INSTALL" = true ]; then
         run_script "$LIB_DIR/12_numpy_install_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     echo "NumPy build completed successfully!"
     echo "========================================="
 fi
@@ -230,34 +251,34 @@ fi
 # Build FAISS if required
 if [ "$BUILD_FAISS" = true ]; then
     echo "Building FAISS ($FAISS_BUILD_TYPE)..."
-    
+
     # create the virtual environment if we're building FAISS
 
     if [ "${RUN_FAISS_CREATE_VENV}" = true ]; then
       run_script "$LIB_DIR/20_create_faiss_venv.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
     echo "Using NumPy build type: ${NUMPY_BUILD_TYPE} for FAISS build"
-    
+
     if [ "$RUN_FAISS_CONFIGURE" = true ]; then
         run_script "$LIB_DIR/21_faiss_configure.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     if [ "$RUN_FAISS_BUILD" = true ]; then
         run_script "$LIB_DIR/22_faiss_build.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     if [ "$RUN_FAISS_PYTHON_BUILD" = true ]; then
         run_script "$LIB_DIR/23_faiss_python_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     if [ "$RUN_FAISS_PYTHON_INSTALL" = true ]; then
         run_script "$LIB_DIR/24_faiss_install_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     if [ "$RUN_FAISS_TEST" = true ]; then
         run_script "$LIB_DIR/25_faiss_test_package.sh" "$NUMPY_BUILD_TYPE" "$FAISS_BUILD_TYPE"
     fi
-    
+
     echo "FAISS build completed successfully!"
     echo "========================================="
 fi

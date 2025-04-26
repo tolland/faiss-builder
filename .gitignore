@@ -4,3 +4,5 @@
 /venv_*
 /local
 /build
+# currently using local mirror, so project uv.lock is not useful externally
+uv.lock

@@ -9,4 +9,5 @@ source "$MKL_ROOT/env/vars.sh"
 source "$MKL_COMPILER_ROOT/env/vars.sh"
 set -u
 
+# shellcheck disable=SC2034
 MKL_SOURCED="true"
