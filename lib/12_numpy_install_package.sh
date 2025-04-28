@@ -29,6 +29,7 @@ VENV_DIR=$(get_numpy_venv_dir "${_NUMPY_BUILD_TYPE}")
 
 # Get the dist directory
 NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}")
+_NUMPY_WHEEL_PREFIX=$(get_numpy_wheel_prefix "${_NUMPY_BUILD_TYPE}")
 
 # Activate the virtual environment
 activate_venv "$VENV_DIR"
@@ -44,7 +45,7 @@ fi
 echo "Installing NumPy wheel from $WHEEL_DIR directory"
 
 # Install the wheel file
-pip install --force-reinstall --no-dependencies $WHEEL_DIR/*.whl
+pip install --force-reinstall --no-dependencies "${WHEEL_DIR}/"*.whl
 
 # Verify installation
 python -c "import numpy; print(f'NumPy version: {numpy.__version__}')"

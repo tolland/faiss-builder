@@ -1,0 +1,24 @@
+[build-system]
+requires = ["hatchling>=1.18.0", "numpy>=1.24.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "${_FAISS_PACKAGE_NAME}"
+version = "1.10.0"
+description = "A library for efficient similarity search and clustering of dense vectors"
+authors = [
+    {name = "Matthijs Douze, Jeff Johnson, Herve Jegou, Lucas Hosseini", email = "faiss@meta.com"}
+]
+license = {text = "MIT"}
+keywords = ["search", "nearest neighbors"]
+dependencies = ["numpy", "packaging"]
+requires-python = ">=3.8"
+
+[tool.hatch.build]
+include = ["faiss/**"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["faiss"]
+
+[tool.hatch.build.hooks.custom]
+path = "hook_build.py"

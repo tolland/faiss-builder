@@ -16,15 +16,24 @@ TBB_ROOT="/opt/intel/oneapi/tbb/2022.1"
 
 # MKL Libraries
 export MKL_LIBRARIES=(
-  "$MKL_ROOT/lib/libmkl_intel_lp64.so"
-  "$MKL_ROOT/lib/libmkl_tbb_thread.so"
-  "$MKL_ROOT/lib/libmkl_gnu_thread.so"
-  "$MKL_ROOT/lib/libmkl_core.so"
-  "$MKL_ROOT/lib/libmkl_intel_thread.so"
-  "$MKL_ROOT/lib/intel64/libmkl_intel_lp64.so"
   "$MKL_COMPILER_ROOT/lib/libiomp5.so"
+  "$MKL_ROOT/lib/intel64/libmkl_intel_lp64.so"
+  "$MKL_ROOT/lib/intel64/libmkl_intel_lp64.so.2"
+  "$MKL_ROOT/lib/libmkl_core.so"
+  "$MKL_ROOT/lib/libmkl_core.so.2"
   "$MKL_ROOT/lib/libmkl_gf_lp64.so"
+  "$MKL_ROOT/lib/libmkl_gf_lp64.so.2"
+  "$MKL_ROOT/lib/libmkl_gnu_thread.so"
+  "$MKL_ROOT/lib/libmkl_gnu_thread.so.2"
+  "$MKL_ROOT/lib/libmkl_intel_lp64.so"
+  "$MKL_ROOT/lib/libmkl_intel_lp64.so.2"
+  "$MKL_ROOT/lib/libmkl_intel_thread.so"
+  "$MKL_ROOT/lib/libmkl_intel_thread.so.2"
+  "$MKL_ROOT/lib/libmkl_tbb_thread.so"
+  "$MKL_ROOT/lib/libmkl_tbb_thread.so.2"
   "$TBB_ROOT/lib/libtbb.so"
+  "$TBB_ROOT/lib/libtbb.so.12"
+  "$TBB_ROOT/lib/libtbb.so.12.15"
 )
 
 # Build settings
@@ -92,6 +101,22 @@ get_numpy_dist_dir() {
     esac
 }
 
+get_numpy_wheel_prefix() {
+    local build_type="$1"
+    case "${build_type}" in
+        "numpy")
+            echo "numpy"
+            ;;
+        "numpy_mkl")
+            echo "numpy_mkl"
+            ;;
+        *)
+            echo "Error: Invalid NumPy build type '$build_type'" >&2
+            exit 1
+            ;;
+    esac
+}
+
 # Function to get the FAISS venv directory based on build type
 get_faiss_venv_dir() {
     local numpy_build_type="$1"
@@ -103,7 +128,8 @@ get_faiss_venv_dir() {
 get_faiss_dist_dir() {
     local numpy_build_type="$1"
     local faiss_build_type="$2"
-    echo "${FAISS_DISTS}/faiss_${numpy_build_type}_${faiss_build_type}"
+    # echo "${FAISS_DISTS}/faiss_${numpy_build_type}_${faiss_build_type}"
+    echo "${FAISS_DISTS}"
 }
 
 
@@ -118,9 +144,10 @@ get_faiss_build_dir() {
 # Function to determine if MKL should be sourced based on build type
 needs_mkl() {
     local build_type="$1"
-    echo "checking build type $build_type"
+    echo "checking build type $build_type" >&2
     if [[ "$build_type" == *"_mkl"* || "$build_type" == *"mkl"* ]]; then
-        return 0  # true in bash
+      echo "returning 0" >&2
+        return 0
     else
         return 1
     fi
@@ -152,6 +179,52 @@ get_numpy_build_type() {
             ;;
         "gpu_mkl")
             echo "numpy_mkl"
+            ;;
+        *)
+            echo "Error: Invalid build type 'build_type'"
+            echo "Valid build types: cpu, cpu_mkl, gpu, gpu_mkl"
+            exit 1
+            ;;
+    esac
+}
+
+get_faiss_package_name() {
+    local build_type="$1"
+    case "${build_type}" in
+        "cpu")
+            echo "faiss-cpu"
+            ;;
+        "cpu_mkl")
+            echo "faiss-cpu-mkl"
+            ;;
+        "gpu")
+            echo "faiss-gpu"
+            ;;
+        "gpu_mkl")
+            echo "faiss-gpu-mkl"
+            ;;
+        *)
+            echo "Error: Invalid build type 'build_type'"
+            echo "Valid build types: cpu, cpu_mkl, gpu, gpu_mkl"
+            exit 1
+            ;;
+    esac
+}
+
+get_faiss_wheel_prefix() {
+    local build_type="$1"
+    case "${build_type}" in
+        "cpu")
+            echo "faiss_cpu"
+            ;;
+        "cpu_mkl")
+            echo "faiss_cpu_mkl"
+            ;;
+        "gpu")
+            echo "faiss_gpu"
+            ;;
+        "gpu_mkl")
+            echo "faiss_gpu_mkl"
             ;;
         *)
             echo "Error: Invalid build type 'build_type'"
@@ -262,7 +335,6 @@ deactivate() {
 check_venv_active() {
     if [ -n "${VIRTUAL_ENV:-}" ]; then
         echo "Deactivating current virtual environment: $VIRTUAL_ENV"
-        type -a deactivate
         deactivate
     fi
 }

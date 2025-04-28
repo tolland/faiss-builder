@@ -28,6 +28,7 @@ source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 FAISS_VENV_DIR=$(get_faiss_venv_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 _FAISS_BUILD_DIR=$(get_faiss_build_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 _FAISS_DIST_DIR=$(get_faiss_dist_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
+_FAISS_WHL_PREFIX=$(get_faiss_wheel_prefix "${_FAISS_BUILD_TYPE}")
 _NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
 
 # Install the correct numpy for this build type
@@ -40,7 +41,7 @@ fi
 
 
 # Check for the faiss wheel file
-if [ ! -d "${_FAISS_DIST_DIR}" ] || [ -z "$(ls -A "${_FAISS_DIST_DIR}"/*.whl 2>/dev/null)" ]; then
+if [ ! -d "${_FAISS_DIST_DIR}" ] || [ -z "$(ls -A "${_FAISS_DIST_DIR}/${_FAISS_WHL_PREFIX}-"*.whl 2>/dev/null)" ]; then
     echo "Error: Python wheel not found. Please build the faiss package first."
     echo "_FAISS_DIST_DIR is ${_FAISS_DIST_DIR}"
     ls -lah "${_FAISS_DIST_DIR}"
@@ -51,7 +52,7 @@ fi
 activate_venv "$FAISS_VENV_DIR"
 
 # Install the wheel
-pip install --force-reinstall --no-dependencies "${_FAISS_DIST_DIR}"/*.whl
+pip install --force-reinstall --no-dependencies "${_FAISS_DIST_DIR}/${_FAISS_WHL_PREFIX}-"*.whl
 
 # Verify installation
 python -c "import faiss; print(f'FAISS version: {faiss.__version__}')"

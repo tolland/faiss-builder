@@ -29,6 +29,7 @@ NUMPY_VENV_DIR=$(get_numpy_venv_dir "${_NUMPY_BUILD_TYPE}")
 
 # Get the dist directory
 _NUMPY_DIST_DIR=$(get_numpy_dist_dir "${_NUMPY_BUILD_TYPE}")
+_NUMPY_WHEEL_PREFIX=$(get_numpy_wheel_prefix "${_NUMPY_BUILD_TYPE}")
 
 # Activate the virtual environment
 activate_venv "$NUMPY_VENV_DIR"
@@ -39,7 +40,7 @@ mkdir -p "${_NUMPY_DIST_DIR}"
 # Install build package if not already installed
 pip install -q build
 
-if [ -d "$_NUMPY_DIST_DIR" ] && [ ! -z "$(ls -A $_NUMPY_DIST_DIR/*.whl 2>/dev/null)" ]; then
+if [ -d "$_NUMPY_DIST_DIR" ] && [ ! -z "$(ls -A "${_NUMPY_DIST_DIR}/${_NUMPY_WHEEL_PREFIX}-"*.whl 2>/dev/null)" ]; then
   echo "numpy already exists in \"${_NUMPY_DIST_DIR}\" - please delete to recreate"
   exit 0
 fi
@@ -49,10 +50,10 @@ cd "${NUMPY_SRC}"
 # Build the package
 if [ "${_NUMPY_BUILD_TYPE}" = "numpy_mkl" ]; then
     # Build with MKL
-    python -m build -Csetup-args=-Dblas=mkl -Csetup-args=-Dlapack=mkl --outdir "${_NUMPY_DIST_DIR}"
+    python -m build --wheel -Csetup-args=-Dblas=mkl -Csetup-args=-Dlapack=mkl --outdir "${_NUMPY_DIST_DIR}"
 else
     # Standard build with explicit BLAS and LAPACK settings
-    python -m build -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir "${_NUMPY_DIST_DIR}"
+    python -m build --wheel -Csetup-args=-Dblas=blas -Csetup-args=-Dlapack=lapack --outdir "${_NUMPY_DIST_DIR}"
 fi
 
 echo "NumPy package built successfully in \"${_NUMPY_DIST_DIR}\"/"

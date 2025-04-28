@@ -23,7 +23,7 @@ source_versions
 verify_repositories
 
 # Source MKL if needed
-source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
+# source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 
 # Get the appropriate venv directory
 _FAISS_VENV_DIR=$(get_faiss_venv_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")
@@ -49,6 +49,7 @@ cd "$PROJECT_ROOT/tests"
 
 # Run the CPU test
 echo "Running basic FAISS CPU test..."
+# LD_DEBUG=libs 
 python test_basic.py
 
 #echo "Running various index tests..."

@@ -36,6 +36,7 @@ display_usage() {
     echo "  --skip-faiss-python-build   - Skip FAISS Python package build step"
     echo "  --skip-faiss-python-install - Skip FAISS Python package install step"
     echo "  --skip-faiss-test           - Skip FAISS test step"
+    echo "  --only-faiss-venv           - Only create FAISS virtual environment"
     echo "  --only-faiss-configure      - Only run FAISS configure step"
     echo "  --only-faiss-build          - Only run FAISS build step"
     echo "  --only-faiss-python-build   - Only run FAISS Python package build step"
@@ -94,19 +95,19 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --only-versions)
-          GET_VERSIONS=true
-          CHECKOUT_REPOS=false
-          BUILD_NUMPY=false
-          BUILD_FAISS=false
-          RUN_NUMPY_BUILD=false
-          RUN_NUMPY_INSTALL=false
-          RUN_FAISS_CREATE_VENV=false
-          RUN_FAISS_CONFIGURE=false
-          RUN_FAISS_BUILD=false
-          RUN_FAISS_PYTHON_BUILD=false
-          RUN_FAISS_PYTHON_INSTALL=false
-          RUN_FAISS_TEST=false
-          ;;
+            GET_VERSIONS=true
+            CHECKOUT_REPOS=false
+            BUILD_NUMPY=false
+            BUILD_FAISS=false
+            RUN_NUMPY_BUILD=false
+            RUN_NUMPY_INSTALL=false
+            RUN_FAISS_CREATE_VENV=false
+            RUN_FAISS_CONFIGURE=false
+            RUN_FAISS_BUILD=false
+            RUN_FAISS_PYTHON_BUILD=false
+            RUN_FAISS_PYTHON_INSTALL=false
+            RUN_FAISS_TEST=false
+            ;;
         --only-numpy)
             BUILD_FAISS=false
             CHECKOUT_REPOS=false
@@ -139,6 +140,28 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-faiss-test)
             RUN_FAISS_TEST=false
+            ;;
+        --only-numpy-python-build)
+            RUN_FAISS_CONFIGURE=false
+            RUN_FAISS_BUILD=false
+            RUN_FAISS_PYTHON_BUILD=false
+            RUN_FAISS_TEST=false
+            BUILD_NUMPY=true
+            RUN_NUMPY_BUILD=true
+            RUN_NUMPY_INSTALL=false
+            CHECKOUT_REPOS=false
+            CHECKOUT_REPOS=false
+            ;;
+        --only-numpy-python-install)
+            RUN_FAISS_CONFIGURE=false
+            RUN_FAISS_BUILD=false
+            RUN_FAISS_PYTHON_BUILD=false
+            RUN_FAISS_TEST=false
+            BUILD_NUMPY=true
+            RUN_NUMPY_BUILD=false
+            RUN_NUMPY_INSTALL=true
+            CHECKOUT_REPOS=false
+            CHECKOUT_REPOS=false
             ;;
         --only-faiss-configure)
             RUN_FAISS_BUILD=false

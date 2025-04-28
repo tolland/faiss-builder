@@ -45,7 +45,7 @@ CMAKE_CMD="cmake -B ${_FAISS_BUILD_DIR} \
   -DBUILD_SHARED_LIBS=OFF \
   -DBUILD_TESTING=OFF \
   -DFAISS_ENABLE_CUVS=OFF \
-  -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE"
+  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
 
 export CC="ccache gcc"
 export CXX="ccache g++"
@@ -63,6 +63,8 @@ case "${_FAISS_BUILD_TYPE}" in
           -DFAISS_OPT_LEVEL=${FAISS_OPT_LEVEL} \
           -DBLA_VENDOR=Intel10_64lp \
           -DMKL_LIBRARIES="$(IFS=';'; echo "${MKL_LIBRARIES[*]}")" \
+          -DCMAKE_INSTALL_RPATH="\$ORIGIN/contrib" \
+          -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
           .
         ;;
     "gpu")
@@ -81,6 +83,8 @@ case "${_FAISS_BUILD_TYPE}" in
           -DCMAKE_CUDA_ARCHITECTURES="$CUDA_ARCHITECTURES" \
           -DBLA_VENDOR=Intel10_64lp \
           -DMKL_LIBRARIES="$(IFS=';'; echo "${MKL_LIBRARIES[*]}")" \
+          -DCMAKE_INSTALL_RPATH="\$ORIGIN/contrib" \
+          -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON \
           .
         ;;
 esac
