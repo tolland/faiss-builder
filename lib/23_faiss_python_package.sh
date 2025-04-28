@@ -71,15 +71,13 @@ cp "$PROJECT_ROOT/lib/hook_build.py" "${FAISS_SRC}/${_FAISS_BUILD_DIR}/faiss/pyt
 
 echo "_FAISS_DIST_DIR = ${_FAISS_DIST_DIR}"
 
-pwd
-
-# python -m build \
-#   --wheel \
-#   --outdir "${_FAISS_DIST_DIR}" \
-#   --verbose --verbose
+python -m build \
+  --wheel \
+  --outdir "${_FAISS_DIST_DIR}" \
+  --verbose --verbose
 
 # @TODO this seems to be using the system python
-python setup.py bdist_wheel --dist-dir "${_FAISS_DIST_DIR}"
+# python setup.py bdist_wheel --dist-dir "${_FAISS_DIST_DIR}"
 
 echo "FAISS Python package built successfully!"
 ls -lah "${_FAISS_DIST_DIR}"

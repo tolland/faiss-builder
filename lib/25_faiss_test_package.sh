@@ -22,8 +22,8 @@ source_versions
 # Verify repositories
 verify_repositories
 
-# Source MKL if needed
-# source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
+Source MKL if needed
+source_mkl_if_needed "${_FAISS_BUILD_TYPE}"
 
 # Get the appropriate venv directory
 _FAISS_VENV_DIR=$(get_faiss_venv_dir "${_NUMPY_BUILD_TYPE}" "${_FAISS_BUILD_TYPE}")

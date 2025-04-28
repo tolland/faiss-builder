@@ -4,6 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "${_FAISS_PACKAGE_NAME}"
+requires-python = ">=3.13"
 dynamic = ["description",
   "version",
   "readme",
@@ -14,7 +15,5 @@ dynamic = ["description",
 ]
 
 [tool.setuptools.package-data]
-faiss = ["*.so", "*.pyd"]
+"faiss" = ["*.so", "*.pyd"]
 "faiss.contrib" = ["*.so", "*.so.12", "*.12", "*.2", "*.do.2", "*.pyd"]
-#
-## test
